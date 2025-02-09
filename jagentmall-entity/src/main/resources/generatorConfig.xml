@@ -30,12 +30,12 @@
             <property name="nullCatalogMeansCurrent" value="true" />
         </jdbcConnection>
 
-        <javaModelGenerator targetPackage="shop.jagentmall.model" targetProject="mall-mbg/src/main/java"/>
+        <javaModelGenerator targetPackage="shop.jagentmall.model" targetProject="jagentmall-entity/src/main/java"/>
 
-        <sqlMapGenerator targetPackage="mapper" targetProject="mall-mbg/src/main/resources"/>
+        <sqlMapGenerator targetPackage="mapper" targetProject="jagentmall-entity/src/main/resources"/>
 
         <javaClientGenerator type="XMLMAPPER" targetPackage="shop.jagentmall.mapper"
-                             targetProject="mall-mbg/src/main/java"/>
+                             targetProject="jagentmall-entity/src/main/java"/>
         <!--生成全部表tableName设为%-->
         <table tableName="%">
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
