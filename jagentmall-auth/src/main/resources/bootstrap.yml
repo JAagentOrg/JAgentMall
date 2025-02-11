@@ -1,7 +1,0 @@
-server:
-  port: 8401
-spring:
-  profiles:
-    active: dev
-  application:
-    name: jagentmall-auth

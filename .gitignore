@@ -4,6 +4,8 @@ target/
 # IDEA #
 .idea/
 *.iml
+*.yml
+
 
 # Eclipse #
 .settings/

@@ -1,7 +1,0 @@
-server:
-  port: 8301
-spring:
-  profiles:
-    active: dev
-  application:
-    name: jagentmall-ai
