@@ -49,9 +49,9 @@ public class SaTokenConfig {
                     // 对于OPTIONS预检请求直接放行
                     SaRouter.match(SaHttpMethod.OPTIONS).stop();
                     // 登录认证：商城前台会员认证
-                    SaRouter.match("/mall-portal/**", r -> StpMemberUtil.checkLogin()).stop();
+                    SaRouter.match("/jagentmall-portal/**", r -> StpMemberUtil.checkLogin()).stop();
                     // 登录认证：管理后台用户认证
-                    SaRouter.match("/mall-admin/**", r -> StpUtil.checkLogin());
+                    SaRouter.match("/jagentmall-admin/**", r -> StpUtil.checkLogin());
                     // 权限认证：管理后台用户权限校验
                     // 获取Redis中缓存的各个接口路径所需权限规则
                     Map<Object, Object> pathResourceMap = redisTemplate.opsForHash().entries(AuthConstant.PATH_RESOURCE_MAP);
