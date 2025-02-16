@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @Title: PmsPortalProductService
  * @Author: [tianyou]
- * @Date: 2025/2/15 22:05
+ * @Date: 2025/2/15
  * @Description: 前台商品管理service
  */
 public interface PmsPortalProductService {

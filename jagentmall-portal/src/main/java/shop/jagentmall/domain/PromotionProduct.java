@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @Title: PromotionProduct
  * @Author: [tianyou]
- * @Date: 2025/2/15 23:18
+ * @Date: 2025/2/15
  * @Description: 商品促销信息，包括SKU、打折优惠、满减优惠
  */
 @Data

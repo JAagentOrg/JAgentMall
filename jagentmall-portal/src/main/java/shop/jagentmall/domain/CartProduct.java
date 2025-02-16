@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @Title: CartProduct
  * @Author: [tianyou]
- * @Date: 2025/2/15 23:34
+ * @Date: 2025/2/15
  * @Description: 购物车中选择规格的商品信息
  */
 @Data

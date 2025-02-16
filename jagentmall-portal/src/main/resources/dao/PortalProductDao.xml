@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="shop.jagentmall.portal.dao.PortalProductDao">
-    <resultMap id="cartProductMap" type="shop.jagentmall.portal.domain.CartProduct" autoMapping="true">
+<mapper namespace="shop.jagentmall.dao.PortalProductDao">
+    <resultMap id="cartProductMap" type="shop.jagentmall.domain.CartProduct" autoMapping="true">
         <id column="id" jdbcType="BIGINT" property="id" />
         <collection property="productAttributeList" columnPrefix="attr_" resultMap="shop.jagentmall.mapper.PmsProductAttributeMapper.BaseResultMap">
         </collection>
         <collection property="skuStockList" columnPrefix="sku_" resultMap="shop.jagentmall.mapper.PmsSkuStockMapper.BaseResultMap">
         </collection>
     </resultMap>
-    <resultMap id="promotionProductMap" type="shop.jagentmall.portal.domain.PromotionProduct" extends="shop.jagentmall.mapper.PmsProductMapper.BaseResultMap">
+    <resultMap id="promotionProductMap" type="shop.jagentmall.domain.PromotionProduct" extends="shop.jagentmall.mapper.PmsProductMapper.BaseResultMap">
         <id column="id" jdbcType="BIGINT" property="id" />
         <collection property="skuStockList" columnPrefix="sku_" resultMap="shop.jagentmall.mapper.PmsSkuStockMapper.BaseResultMap">
         </collection>

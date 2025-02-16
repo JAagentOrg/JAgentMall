@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @Title: PortalProductDao
  * @Author: [tianyou]
- * @Date: 2025/2/15 23:12
+ * @Date: 2025/2/15
  * @Description: 前台系统自定义商品Dao
  */
 public interface PortalProductDao {

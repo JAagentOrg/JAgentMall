@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @Title: PmsPortalProductDetail
  * @Author: [tianyou]
- * @Date: 2025/2/15 22:11
+ * @Date: 2025/2/15
  * @Description: 前台商品详情
  */
 @Data
