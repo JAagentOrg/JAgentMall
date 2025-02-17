@@ -30,7 +30,7 @@ public class PmsPortalProductController {
     @Autowired
     public PmsPortalProductService portalProductService;
 
-    @Operation(summary = "综合搜索、筛选、排序")
+    @Operation(summary = "综合搜索、筛选、排序，获取批量商品")
     @Parameter(name = "sort", description = "排序字段:0->按相关度；1->按新品；2->按销量；3->价格从低到高；4->价格从高到低",
             in= ParameterIn.QUERY,schema = @Schema(type = "integer",defaultValue = "0",allowableValues = {"0","1","2","3","4"}))
     @RequestMapping(value = "/search", method = RequestMethod.GET)
