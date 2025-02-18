@@ -85,4 +85,12 @@ public interface UmsMemberService {
      */
     @Transactional
     void delUser(String telephone, String password, String authCode);
+
+    /**
+     * 更新用户的积分
+     * @param id
+     * @param num
+     */
+    @Transactional
+    void updateIntegration(Long id, Integer num);
 }

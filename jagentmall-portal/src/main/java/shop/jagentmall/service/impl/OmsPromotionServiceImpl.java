@@ -44,7 +44,7 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
             // 获取当前商品的促销类型
             Integer promotionType = promotionProduct.getPromotionType();
 
-            if(promotionType == 1){
+            if(promotionType.equals(1)){
                 // 以单个商品促销
                 for(OmsCartItem cartItem: itemList){
                     CartPromotionItem cartPromotionItem = new CartPromotionItem();
@@ -65,10 +65,10 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
                     cartPromotionItemList.add(cartPromotionItem);
                 }
             }
-            else if(promotionType == 2){
+            else if(promotionType.equals(2)){
                 // 以会员等级价格促销
             }
-            else if(promotionType == 3){
+            else if(promotionType.equals(3)){
                 // 使用阶梯价格
                 int count = 0;
                 for (OmsCartItem item: itemList) {
@@ -103,7 +103,7 @@ public class OmsPromotionServiceImpl implements OmsPromotionService {
                     handleNoReduce(cartPromotionItemList,itemList,promotionProduct);
                 }
             }
-            else if(promotionType == 4){
+            else if(promotionType.equals(4)){
                 // 满减优惠
                 BigDecimal totalAmount= getCartItemAmount(itemList,promotionProductList);
                 PmsProductFullReduction fullReduction = getProductFullReduction(totalAmount,promotionProduct.getProductFullReductionList());

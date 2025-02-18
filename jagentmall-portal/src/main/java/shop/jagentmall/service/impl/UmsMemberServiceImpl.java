@@ -233,6 +233,15 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         StpMemberUtil.logout();
     }
 
+    @Override
+    public void updateIntegration(Long id, Integer num) {
+        UmsMember record=new UmsMember();
+        record.setId(id);
+        record.setIntegration(num);
+        memberMapper.updateByPrimaryKeySelective(record);
+        memberCacheService.delMember(id);
+    }
+
 
     /**
      * 验证验证码是否正确
