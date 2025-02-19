@@ -1,10 +1,13 @@
 package shop.jagentmall.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.component.CancelOrderSender;
 import shop.jagentmall.domain.*;
 import shop.jagentmall.dao.*;
@@ -283,6 +286,95 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
                 UmsMember member = memberService.getById(cancelOrder.getMemberId());
                 memberService.updateIntegration(cancelOrder.getMemberId(), member.getIntegration() + cancelOrder.getUseIntegration());
             }
+        }
+    }
+
+    @Override
+    public CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize) {
+        // status为1，是要获取所有的订单
+        if(status == -1){
+            status = null;
+        }
+        UmsMember member = memberService.getCurrentMember();
+        PageHelper.startPage(pageNum,pageSize);
+        // 首先获取订单主表信息
+        OmsOrderExample orderExample = new OmsOrderExample();
+        OmsOrderExample.Criteria criteria = orderExample.createCriteria();
+        criteria.andDeleteStatusEqualTo(0)
+                .andMemberIdEqualTo(member.getId());
+        if(status != null){
+            criteria.andStatusEqualTo(status);
+        }
+        orderExample.setOrderByClause("create_time desc");
+        List<OmsOrder> orderList = orderMapper.selectByExample(orderExample);
+        // 将分页信息存储到orderPage中
+        CommonPage<OmsOrder> orderPage = CommonPage.restPage(orderList);
+        // 设置分页信息
+        CommonPage<OmsOrderDetail> resultPage = new CommonPage<>();
+        resultPage.setPageNum(orderPage.getPageNum());
+        resultPage.setPageSize(orderPage.getPageSize());
+        resultPage.setTotal(orderPage.getTotal());
+        resultPage.setTotalPage(orderPage.getTotalPage());
+        if(CollUtil.isEmpty(orderList)){
+            return resultPage;
+        }
+        // 设置数据信息
+        List<Long> orderIds = orderList.stream().map(OmsOrder::getId).collect(Collectors.toList());
+        OmsOrderItemExample orderItemExample = new OmsOrderItemExample();
+        orderItemExample.createCriteria().andOrderIdIn(orderIds);
+        List<OmsOrderItem> orderItemList = orderItemMapper.selectByExample(orderItemExample);
+        List<OmsOrderDetail> orderDetailList = new ArrayList<>();
+        for (OmsOrder omsOrder : orderList) {
+            OmsOrderDetail orderDetail = new OmsOrderDetail();
+            BeanUtil.copyProperties(omsOrder,orderDetail);
+            List<OmsOrderItem> relatedItemList = orderItemList.stream().filter(item -> item.getOrderId().equals(orderDetail.getId())).collect(Collectors.toList());
+            orderDetail.setOrderItemList(relatedItemList);
+            orderDetailList.add(orderDetail);
+        }
+        resultPage.setList(orderDetailList);
+        return resultPage;
+    }
+
+    @Override
+    public OmsOrderDetail detail(Long orderId) {
+        OmsOrder omsOrder = orderMapper.selectByPrimaryKey(orderId);
+        OmsOrderItemExample example = new OmsOrderItemExample();
+        example.createCriteria().andOrderIdEqualTo(orderId);
+        List<OmsOrderItem> orderItemList = orderItemMapper.selectByExample(example);
+        OmsOrderDetail orderDetail = new OmsOrderDetail();
+        BeanUtil.copyProperties(omsOrder,orderDetail);
+        orderDetail.setOrderItemList(orderItemList);
+        return orderDetail;
+    }
+
+    @Override
+    public void confirmReceiveOrder(Long orderId) {
+        UmsMember member = memberService.getCurrentMember();
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        if(!member.getId().equals(order.getMemberId())){
+            Asserts.fail("不能确认他人订单！");
+        }
+        if(order.getStatus()!=2){
+            Asserts.fail("该订单还未发货！");
+        }
+        order.setStatus(3);
+        order.setConfirmStatus(1);
+        order.setReceiveTime(new Date());
+        orderMapper.updateByPrimaryKey(order);
+    }
+
+    @Override
+    public void deleteOrder(Long orderId) {
+        UmsMember member = memberService.getCurrentMember();
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        if(!member.getId().equals(order.getMemberId())){
+            Asserts.fail("不能删除他人订单！");
+        }
+        if(order.getStatus()==3||order.getStatus()==4){
+            order.setDeleteStatus(1);
+            orderMapper.updateByPrimaryKey(order);
+        }else{
+            Asserts.fail("只能删除已完成或已关闭的订单！");
         }
     }
 

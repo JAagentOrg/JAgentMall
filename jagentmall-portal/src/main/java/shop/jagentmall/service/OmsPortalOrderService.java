@@ -1,7 +1,9 @@
 package shop.jagentmall.service;
 
 import org.springframework.transaction.annotation.Transactional;
+import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.domain.ConfirmOrderResult;
+import shop.jagentmall.domain.OmsOrderDetail;
 import shop.jagentmall.domain.OrderParam;
 
 import java.util.List;
@@ -40,4 +42,32 @@ public interface OmsPortalOrderService {
      */
     @Transactional
     void cancelOrder(Long orderId);
+
+    /**
+     * 按状态分页获取用户订单列表
+     * @param status
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    CommonPage<OmsOrderDetail> list(Integer status, Integer pageNum, Integer pageSize);
+
+    /**
+     * 根据订单id获取订单详细信息
+     * @param orderId
+     * @return
+     */
+    OmsOrderDetail detail(Long orderId);
+
+    /**
+     * 用户确认收货
+     * @param orderId
+     */
+    void confirmReceiveOrder(Long orderId);
+
+    /**
+     * 用户删除订单
+     * @param orderId
+     */
+    void deleteOrder(Long orderId);
 }
