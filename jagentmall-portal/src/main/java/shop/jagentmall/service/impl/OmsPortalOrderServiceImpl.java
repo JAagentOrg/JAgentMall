@@ -378,6 +378,35 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         }
     }
 
+    @Override
+    public void paySuccessByOrderSn(String orderSn, Integer payType) {
+        OmsOrderExample example =  new OmsOrderExample();
+        example.createCriteria()
+                .andOrderSnEqualTo(orderSn)
+                .andStatusEqualTo(0)
+                .andDeleteStatusEqualTo(0);
+        List<OmsOrder> orderList = orderMapper.selectByExample(example);
+        if(CollUtil.isNotEmpty(orderList)){
+            OmsOrder order = orderList.get(0);
+            paySuccess(order.getId(),payType);
+        }
+    }
+
+    @Override
+    public Integer paySuccess(Long orderId, Integer payType) {
+        //修改订单支付状态
+        OmsOrder order = new OmsOrder();
+        order.setId(orderId);
+        order.setStatus(1);
+        order.setPaymentTime(new Date());
+        order.setPayType(payType);
+        orderMapper.updateByPrimaryKeySelective(order);
+        //恢复所有下单商品的锁定库存，扣减真实库存
+        OmsOrderDetail orderDetail = portalOrderDao.getDetail(orderId);
+        int count = portalOrderDao.updateSkuStock(orderDetail.getOrderItemList());
+        return count;
+    }
+
 
     /**
      * 计算购物车中总金额，包含原价，优惠金额，实际支付金额

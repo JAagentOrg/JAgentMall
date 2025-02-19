@@ -18,7 +18,17 @@ public enum QueueEnum {
     /**
      * 消息通知ttl队列
      */
-    QUEUE_TTL_ORDER_CANCEL("mall.order.direct.ttl", "mall.order.cancel.ttl", "mall.order.cancel.ttl");
+    QUEUE_TTL_ORDER_CANCEL("mall.order.direct.ttl", "mall.order.cancel.ttl", "mall.order.cancel.ttl"),
+
+    /**
+     * 订单支付关闭消息通知队列
+     */
+    QUEUE_PAY_CLOSE("mall.pay.direct", "mall.pay.close", "mall.pay.close"),
+
+    /**
+     * 订单支付关闭消息ttl队列
+     */
+    QUEUE_TTL_PAY_CLOSE("mall.pay.direct.ttl", "mall.pay.close.ttl", "mall.pay.close.ttl");
 
     /**
      * 交换名称

@@ -25,6 +25,17 @@ public class RabbitMqConfig {
     }
 
     /**
+     * 支付关闭实际消费队列所绑定的交换机
+     */
+    @Bean
+    DirectExchange payDirect() {
+        return (DirectExchange) ExchangeBuilder
+                .directExchange(QueueEnum.QUEUE_PAY_CLOSE.getExchange())
+                .durable(true)
+                .build();
+    }
+
+    /**
      * 订单延迟队列队列所绑定的交换机
      */
     @Bean
@@ -36,11 +47,30 @@ public class RabbitMqConfig {
     }
 
     /**
+     * 支付延迟队列队列所绑定的交换机
+     */
+    @Bean
+    DirectExchange payTtlDirect() {
+        return (DirectExchange) ExchangeBuilder
+                .directExchange(QueueEnum.QUEUE_TTL_PAY_CLOSE.getExchange())
+                .durable(true)
+                .build();
+    }
+
+    /**
      * 订单实际消费队列
      */
     @Bean
     public Queue orderQueue() {
         return new Queue(QueueEnum.QUEUE_ORDER_CANCEL.getName());
+    }
+
+    /**
+     * 支付关闭实际消费队列
+     */
+    @Bean
+    public Queue payQueue() {
+        return new Queue(QueueEnum.QUEUE_PAY_CLOSE.getName());
     }
 
     /**
@@ -56,6 +86,18 @@ public class RabbitMqConfig {
     }
 
     /**
+     * 支付关闭延迟队列（死信队列）
+     */
+    @Bean
+    public Queue payTtlQueue() {
+        return QueueBuilder
+                .durable(QueueEnum.QUEUE_TTL_PAY_CLOSE.getName())
+                .withArgument("x-dead-letter-exchange", QueueEnum.QUEUE_PAY_CLOSE.getExchange())//到期后转发的交换机
+                .withArgument("x-dead-letter-routing-key", QueueEnum.QUEUE_PAY_CLOSE.getRouteKey())//到期后转发的路由键
+                .build();
+    }
+
+    /**
      * 将订单队列绑定到交换机
      */
     @Bean
@@ -67,6 +109,17 @@ public class RabbitMqConfig {
     }
 
     /**
+     * 将支付关闭队列绑定到交换机
+     */
+    @Bean
+    Binding payBinding(DirectExchange payDirect, Queue payQueue){
+        return BindingBuilder
+                .bind(payQueue)
+                .to(payDirect)
+                .with(QueueEnum.QUEUE_PAY_CLOSE.getRouteKey());
+    }
+
+    /**
      * 将订单延迟队列绑定到交换机
      */
     @Bean
@@ -75,5 +128,16 @@ public class RabbitMqConfig {
                 .bind(orderTtlQueue)
                 .to(orderTtlDirect)
                 .with(QueueEnum.QUEUE_TTL_ORDER_CANCEL.getRouteKey());
+    }
+
+    /**
+     * 将支付关闭延迟队列绑定到交换机
+     */
+    @Bean
+    Binding payTtlBinding(DirectExchange payTtlDirect,Queue payTtlQueue){
+        return BindingBuilder
+                .bind(payTtlQueue)
+                .to(payTtlDirect)
+                .with(QueueEnum.QUEUE_TTL_PAY_CLOSE.getRouteKey());
     }
 }
