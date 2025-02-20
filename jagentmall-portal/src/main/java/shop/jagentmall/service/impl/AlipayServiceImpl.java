@@ -5,18 +5,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
-import com.alipay.api.request.AlipayTradeCloseRequest;
-import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.alipay.api.request.AlipayTradeQueryRequest;
-import com.alipay.api.request.AlipayTradeWapPayRequest;
-import com.alipay.api.response.AlipayTradeCloseResponse;
-import com.alipay.api.response.AlipayTradeQueryResponse;
+import com.alipay.api.request.*;
+import com.alipay.api.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shop.jagentmall.component.ClosePaySender;
 import shop.jagentmall.config.AlipayConfig;
 import shop.jagentmall.domain.AliPayParam;
+import shop.jagentmall.domain.AliPayRefundParam;
 import shop.jagentmall.mapper.OmsOrderMapper;
 import shop.jagentmall.service.AlipayService;
 import shop.jagentmall.service.OmsPortalOrderService;
@@ -67,9 +64,23 @@ public class AlipayServiceImpl implements AlipayService {
         String formHtml = null;
         closePaySender.sendMessage(aliPayParam.getOutTradeNo(),5*60*1000);
         try {
-            formHtml = alipayClient.pageExecute(request).getBody();
+//            formHtml = alipayClient.pageExecute(request).getBody();
+            AlipayTradePagePayResponse response = alipayClient.pageExecute(request);
+            if(response.isSuccess()){
+                // 支付成功
+                formHtml = response.getBody();
+            }
+            else{
+                // 支付失败
+                String errorMessage = "Alipay payment failed: " + response.getSubMsg();
+                // 可以记录日志、抛出自定义异常等
+                log.error(errorMessage);
+                // 根据实际需求返回错误信息或者提示用户
+                formHtml = "<h1>支付失败: " + errorMessage + "</h1>";
+            }
         } catch (AlipayApiException e) {
-            e.printStackTrace();
+            log.error("Alipay API Exception: " + e.getMessage(), e);
+            formHtml = "<h1>支付请求发生错误，请稍后再试</h1>";
         }
         return formHtml;
     }
@@ -157,9 +168,22 @@ public class AlipayServiceImpl implements AlipayService {
         //手机网站支付默认传值FAST_INSTANT_TRADE_PAY
         bizContent.put("product_code", "QUICK_WAP_WAY");
         request.setBizContent(bizContent.toString());
+        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),5*60*1000);
         String formHtml = null;
         try {
-            formHtml = alipayClient.pageExecute(request).getBody();
+            AlipayTradeWapPayResponse response = alipayClient.pageExecute(request);
+            if(response.isSuccess()){
+                // 支付成功
+                formHtml = response.getBody();
+            }
+            else{
+                // 支付失败
+                String errorMessage = "Alipay payment failed: " + response.getSubMsg();
+                // 可以记录日志、抛出自定义异常等
+                log.error(errorMessage);
+                // 根据实际需求返回错误信息或者提示用户
+                formHtml = "<h1>支付失败: " + errorMessage + "</h1>";
+            }
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
@@ -182,6 +206,34 @@ public class AlipayServiceImpl implements AlipayService {
             }
         } catch (AlipayApiException e) {
             e.printStackTrace();
+            log.error("Alipay API Exception: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean refund(AliPayRefundParam refundParam) {
+        AlipayTradeRefundRequest request = new AlipayTradeRefundRequest();
+
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no", refundParam.getOutTradeNo());
+        bizContent.put("refund_amount", refundParam.getRefundAmount());
+        bizContent.put("refund_reason", refundParam.getRefundReason());
+        bizContent.put("out_request_no", refundParam.getOutRefundNo());
+        request.setBizContent(bizContent.toString());
+        try{
+            AlipayTradeRefundResponse response =  alipayClient.execute(request);
+            if(response.isSuccess()){
+                log.info("订单退款成功！outTradeNo:{}",refundParam.getOutTradeNo());
+                return true;
+            }
+            else{
+                log.info("订单退款失败！outTradeNo:{}",refundParam.getOutTradeNo());
+                return false;
+            }
+
+        } catch (AlipayApiException e) {
+            log.error("Alipay API Exception: " + e.getMessage(), e);
+            return false;
         }
     }
 }

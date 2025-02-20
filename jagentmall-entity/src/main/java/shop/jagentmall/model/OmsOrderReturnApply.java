@@ -50,7 +50,7 @@ public class OmsOrderReturnApply implements Serializable {
     @Schema(title = "商品品牌")
     private String productBrand;
 
-    @Schema(title = "商品销售属性：颜色：红色；尺码：xl;")
+    @Schema(title = "商品销售属性：颜色：红色; 尺码：xl;")
     private String productAttr;
 
     @Schema(title = "退货数量")

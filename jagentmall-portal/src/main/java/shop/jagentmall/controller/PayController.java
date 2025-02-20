@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.config.AlipayConfig;
 import shop.jagentmall.domain.AliPayParam;
+import shop.jagentmall.domain.AliPayRefundParam;
 import shop.jagentmall.service.AlipayService;
 
 import java.io.IOException;
@@ -72,8 +74,16 @@ public class PayController {
     @Operation(summary = "支付宝支付过程中取消支付")
     @RequestMapping(value = "/closePay", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<String> query(String outTradeNo){
+    public CommonResult<String> query(@RequestParam String outTradeNo){
         alipayService.colsePay(outTradeNo);
+        return CommonResult.success(null,"支付取消成功");
+    }
+
+    @Operation(summary = "退款")
+    @RequestMapping(value = "/refund", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<String> refund(AliPayRefundParam refundParam){
+        alipayService.refund(refundParam);
         return CommonResult.success(null,"支付取消成功");
     }
 }

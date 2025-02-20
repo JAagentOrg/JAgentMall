@@ -68,7 +68,7 @@ public class OmsPortalOrderController {
         return CommonResult.success(orderDetail);
     }
 
-    @Operation(summary = "用户取消订单")
+    @Operation(summary = "取消订单")
     @RequestMapping(value = "/cancelUserOrder", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult cancelUserOrder(Long orderId) {
@@ -90,6 +90,14 @@ public class OmsPortalOrderController {
     public CommonResult deleteOrder(Long orderId) {
         portalOrderService.deleteOrder(orderId);
         return CommonResult.success(null);
+    }
+
+    @Operation(summary = "用户支付成功的回调")
+    @RequestMapping(value = "/paySuccess", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult paySuccess(@RequestParam Long orderId,@RequestParam Integer payType) {
+        Integer count = portalOrderService.paySuccess(orderId,payType);
+        return CommonResult.success(count, "支付成功");
     }
 
 

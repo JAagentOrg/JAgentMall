@@ -1,6 +1,7 @@
 package shop.jagentmall.service;
 
 import shop.jagentmall.domain.AliPayParam;
+import shop.jagentmall.domain.AliPayRefundParam;
 
 import java.util.Map;
 
@@ -39,4 +40,10 @@ public interface AlipayService {
      * @param outTradeNo
      */
     void colsePay(String outTradeNo);
+
+    /**
+     * 退款
+     * @param refundParam
+     */
+    boolean refund(AliPayRefundParam refundParam);
 }
