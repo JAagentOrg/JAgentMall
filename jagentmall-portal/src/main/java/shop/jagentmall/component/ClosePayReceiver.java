@@ -25,7 +25,7 @@ public class ClosePayReceiver {
     private AlipayService alipayService;
     @Idempotent(
             uniqueKeyPrefix = "JAgentMall-PortalOrder:delay_close_pay:",
-            key = "#outTradeNo",
+            key = "T(String).valueOf(#outTradeNo)",
             type = IdempotentTypeEnum.SPEL,
             scene = IdempotentSceneEnum.MQ,
             keyTimeout = 7200L

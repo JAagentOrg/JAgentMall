@@ -26,7 +26,7 @@ public class CancelOrderReceiver {
     private OmsPortalOrderService portalOrderService;
     @Idempotent(
             uniqueKeyPrefix = "JAgentMall-PortalOrder:delay_cancel_order:",
-            key = "#orderId",
+            key = "T(String).valueOf(#orderId)",
             type = IdempotentTypeEnum.SPEL,
             scene = IdempotentSceneEnum.MQ,
             keyTimeout = 7200L

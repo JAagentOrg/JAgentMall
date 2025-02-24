@@ -47,7 +47,7 @@ public class OmsPortalOrderController {
             uniqueKeyPrefix = "JAgentMall-PortalOrder:lock_generateOrder:",
             key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
                     + "+'_'+"
-                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('UmsMemberService').getCurrentMemberId()",
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('umsMemberServiceImpl').getCurrentMemberId()",
             message = "正在执行下单流程，请稍后...",
             scene = IdempotentSceneEnum.RESTAPI,
             type = IdempotentTypeEnum.SPEL

@@ -42,7 +42,7 @@ public class PayController {
             uniqueKeyPrefix = "JAgentMall-Pay:lock_generatePay:",
             key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
                     + "+'_'+"
-                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('UmsMemberService').getCurrentMemberId()"
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('umsMemberServiceImpl').getCurrentMemberId()"
                     + "#aliPayParam.getOutTradeNo()",
             message = "正在执行支付流程，请稍后...",
             scene = IdempotentSceneEnum.RESTAPI,
