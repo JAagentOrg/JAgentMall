@@ -2,6 +2,7 @@ package shop.jagentmall.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import shop.jagentmall.dao.HomeDao;
 import shop.jagentmall.domain.FlashPromotionProduct;
@@ -21,6 +22,7 @@ import java.util.List;
  * @Date: 2025/2/20
  * @Description: 首页内容管理service实现类
  */
+@Service
 public class HomeServiceImpl implements HomeService {
 
     @Autowired

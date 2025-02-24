@@ -13,6 +13,9 @@ import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.domain.ConfirmOrderResult;
 import shop.jagentmall.domain.OmsOrderDetail;
 import shop.jagentmall.domain.OrderParam;
+import shop.jagentmall.idempotent.annotation.Idempotent;
+import shop.jagentmall.idempotent.enums.IdempotentSceneEnum;
+import shop.jagentmall.idempotent.enums.IdempotentTypeEnum;
 import shop.jagentmall.service.OmsPortalOrderService;
 
 import java.util.List;
@@ -40,6 +43,15 @@ public class OmsPortalOrderController {
         return CommonResult.success(confirmOrderResult);
     }
 
+    @Idempotent(
+            uniqueKeyPrefix = "JAgentMall-PortalOrder:lock_generateOrder:",
+            key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
+                    + "+'_'+"
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('UmsMemberService').getCurrentMemberId()",
+            message = "正在执行下单流程，请稍后...",
+            scene = IdempotentSceneEnum.RESTAPI,
+            type = IdempotentTypeEnum.SPEL
+    )
     @Operation(summary = "根据购物车信息生成订单")
     @RequestMapping(value = "/generateOrder", method = RequestMethod.POST)
     @ResponseBody

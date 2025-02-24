@@ -6,6 +6,9 @@ import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import shop.jagentmall.idempotent.annotation.Idempotent;
+import shop.jagentmall.idempotent.enums.IdempotentSceneEnum;
+import shop.jagentmall.idempotent.enums.IdempotentTypeEnum;
 import shop.jagentmall.service.OmsPortalOrderService;
 
 /**
@@ -21,6 +24,13 @@ public class CancelOrderReceiver {
 
     @Autowired
     private OmsPortalOrderService portalOrderService;
+    @Idempotent(
+            uniqueKeyPrefix = "JAgentMall-PortalOrder:delay_cancel_order:",
+            key = "#orderId",
+            type = IdempotentTypeEnum.SPEL,
+            scene = IdempotentSceneEnum.MQ,
+            keyTimeout = 7200L
+    )
     @RabbitHandler
     public void handle(Long orderId){
         portalOrderService.cancelOrder(orderId);

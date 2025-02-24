@@ -44,6 +44,13 @@ public interface UmsMemberService {
     UmsMember getById(Long id);
 
     /**
+     * 获取当前用户的id
+     *
+     * @return
+     */
+    String getCurrentMemberId();
+
+    /**
      * 会员登出
      */
     void logout();

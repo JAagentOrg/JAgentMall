@@ -37,6 +37,7 @@ public class UmsMemberController {
 
     @Operation(summary = "会员登录")
     @PostMapping( "/login")
+    @ResponseBody
     public CommonResult login(@RequestParam String username,
                               @RequestParam String password) {
         SaTokenInfo saTokenInfo  = memberService.login(username, password);

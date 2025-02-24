@@ -3,6 +3,7 @@ package shop.jagentmall.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.BCrypt;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.util.Random;
  * @Description: 会员管理Service实现类
  */
 @Service
+@Slf4j
 public class UmsMemberServiceImpl implements UmsMemberService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UmsMemberServiceImpl.class);
@@ -59,11 +61,12 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public SaTokenInfo login(String username, String password) {
         //数据校验
-        if(StrUtil.isEmpty(username)||StrUtil.isEmpty(password)){
+        if(StrUtil.isEmpty(username) || StrUtil.isEmpty(password)){
             Asserts.fail("用户名或密码不能为空！");
         }
         UmsMember member = getByUsername(username);
-        if(member==null){
+        log.info("============================================");
+        if(member == null){
             Asserts.fail("找不到该用户！");
         }
         if (!BCrypt.checkpw(password, member.getPassword())) {
@@ -120,7 +123,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     public UmsMember getCurrentMember() {
         UserDto userDto = (UserDto) StpMemberUtil.getSession().get(AuthConstant.STP_MEMBER_INFO);
         UmsMember member = memberCacheService.getMember(userDto.getId());
-        if(member!=null){
+        if(member != null){
             return member;
         }else{
             member = getById(userDto.getId());
@@ -132,6 +135,12 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public UmsMember getById(Long id) {
         return memberMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public String getCurrentMemberId() {
+        UmsMember member = getCurrentMember();
+        return String.valueOf(member.getId());
     }
 
     @Override
@@ -254,6 +263,7 @@ public class UmsMemberServiceImpl implements UmsMemberService {
             return false;
         }
         String realAuthCode = memberCacheService.getAuthCode(telephone);
+        log.info("真实的验证码：{}",realAuthCode);
         return authCode.equals(realAuthCode);
     }
 }

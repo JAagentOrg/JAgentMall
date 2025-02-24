@@ -14,6 +14,9 @@ import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.config.AlipayConfig;
 import shop.jagentmall.domain.AliPayParam;
 import shop.jagentmall.domain.AliPayRefundParam;
+import shop.jagentmall.idempotent.annotation.Idempotent;
+import shop.jagentmall.idempotent.enums.IdempotentSceneEnum;
+import shop.jagentmall.idempotent.enums.IdempotentTypeEnum;
 import shop.jagentmall.service.AlipayService;
 
 import java.io.IOException;
@@ -35,6 +38,16 @@ public class PayController {
     @Autowired
     private AlipayService alipayService;
 
+    @Idempotent(
+            uniqueKeyPrefix = "JAgentMall-Pay:lock_generatePay:",
+            key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
+                    + "+'_'+"
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('UmsMemberService').getCurrentMemberId()"
+                    + "#aliPayParam.getOutTradeNo()",
+            message = "正在执行支付流程，请稍后...",
+            scene = IdempotentSceneEnum.RESTAPI,
+            type = IdempotentTypeEnum.SPEL
+    )
     @Operation(summary = "支付宝电脑网站支付")
     @RequestMapping(value = "/pay", method = RequestMethod.GET)
     public void pay(AliPayParam aliPayParam, HttpServletResponse response) throws IOException {
@@ -44,6 +57,17 @@ public class PayController {
         response.getWriter().close();
     }
 
+
+    @Idempotent(
+            uniqueKeyPrefix = "JAgentMall-Pay:lock_generatePay:",
+            key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
+                    + "+'_'+"
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('UmsMemberService').getCurrentMemberId()"
+                    + "#aliPayParam.getOutTradeNo()",
+            message = "正在执行支付流程，请稍后...",
+            scene = IdempotentSceneEnum.RESTAPI,
+            type = IdempotentTypeEnum.SPEL
+    )
     @Operation(summary = "支付宝手机网站支付")
     @RequestMapping(value = "/webPay", method = RequestMethod.GET)
     public void webPay(AliPayParam aliPayParam, HttpServletResponse response) throws IOException {

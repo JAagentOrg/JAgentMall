@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import shop.jagentmall.domain.MemberProductCollection;
 import shop.jagentmall.model.UmsMember;
 import shop.jagentmall.repository.MemberProductCollectionRepository;
@@ -16,6 +17,7 @@ import shop.jagentmall.service.UmsMemberService;
  * @Date: 2025/2/20
  * @Description: 会员收藏Service实现类
  */
+@Service
 public class MemberCollectionServiceImpl implements MemberCollectionService {
     @Autowired
     private MemberProductCollectionRepository productCollectionRepository;
