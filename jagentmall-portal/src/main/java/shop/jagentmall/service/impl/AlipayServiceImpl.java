@@ -105,6 +105,8 @@ public class AlipayServiceImpl implements AlipayService {
                 portalOrderService.paySuccessByOrderSn(outTradeNo,1);
             }else{
                 log.warn("订单未支付成功，trade_status:{}",tradeStatus);
+                String outTradeNo = params.get("out_trade_no");
+                portalOrderService.callBackStock(outTradeNo);
             }
         } else {
             log.warn("支付回调签名校验失败！");

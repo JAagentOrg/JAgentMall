@@ -28,7 +28,17 @@ public enum QueueEnum {
     /**
      * 订单支付关闭消息ttl队列
      */
-    QUEUE_TTL_PAY_CLOSE("mall.pay.direct.ttl", "mall.pay.close.ttl", "mall.pay.close.ttl");
+    QUEUE_TTL_PAY_CLOSE("mall.pay.direct.ttl", "mall.pay.close.ttl", "mall.pay.close.ttl"),
+
+    /**
+     * 根据购物车id获取购物车信息，削峰消息队列
+     */
+    QUEUE_CART_GETINFO("mall.cart.getInfo.direct","mall.cart.getInfo","mall.cart.getInfo"),
+
+    /**
+     * 订单生成削峰队列
+     */
+    QUEUE_ORDER_GENERATE("mall.order.generate.direct","mall.order.generate","mall.order.generate");
 
     /**
      * 交换名称

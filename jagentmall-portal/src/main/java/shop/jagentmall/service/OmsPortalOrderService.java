@@ -5,6 +5,7 @@ import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.domain.ConfirmOrderResult;
 import shop.jagentmall.domain.OmsOrderDetail;
 import shop.jagentmall.domain.OrderParam;
+import shop.jagentmall.domain.OrderParamV1;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,13 @@ public interface OmsPortalOrderService {
      */
     @Transactional
     Map<String, Object> generateOrder(OrderParam orderParam);
+
+    /**
+     * redis+mq方式生成订单
+     * @param orderParam
+     * @return
+     */
+    Map<String, Object> generateOrderV1(OrderParamV1 orderParam);
 
     /**
      * 发送延迟消息取消订单
@@ -87,4 +95,10 @@ public interface OmsPortalOrderService {
      */
     @Transactional
     Integer paySuccess(Long orderId, Integer payType);
+
+    /**
+     * 回滚redis中的库存数据
+     * @param orderSn
+     */
+    void callBackStock(String orderSn);
 }
