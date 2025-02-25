@@ -13,6 +13,7 @@ import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.domain.ConfirmOrderResult;
 import shop.jagentmall.domain.OmsOrderDetail;
 import shop.jagentmall.domain.OrderParam;
+import shop.jagentmall.domain.OrderParamV1;
 import shop.jagentmall.idempotent.annotation.Idempotent;
 import shop.jagentmall.idempotent.enums.IdempotentSceneEnum;
 import shop.jagentmall.idempotent.enums.IdempotentTypeEnum;
@@ -59,6 +60,24 @@ public class OmsPortalOrderController {
         Map<String, Object> result = portalOrderService.generateOrder(orderParam);
         return CommonResult.success(result, "下单成功");
     }
+
+    @Idempotent(
+            uniqueKeyPrefix = "JAgentMall-PortalOrder:lock_generateOrderV1:",
+            key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
+                    + "+'_'+"
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('umsMemberServiceImpl').getCurrentMemberId()",
+            message = "正在执行下单流程，请稍后...",
+            scene = IdempotentSceneEnum.RESTAPI,
+            type = IdempotentTypeEnum.SPEL
+    )
+    @Operation(summary = "根据购物车信息生成订单")
+    @RequestMapping(value = "/generateOrderV1", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult generateOrderV1(@RequestBody OrderParamV1 orderParam) {
+        Map<String, Object> result = portalOrderService.generateOrderV1(orderParam);
+        return CommonResult.success(result, "下单成功");
+    }
+
 
     @Operation(summary = "按状态分页获取用户订单列表")
     @Parameter(name = "status", description = "订单状态：-1->全部；0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭",

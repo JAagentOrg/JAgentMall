@@ -35,6 +35,7 @@ public class RabbitMqConfig {
                 .build();
     }
 
+
     /**
      * 订单延迟队列队列所绑定的交换机
      */
@@ -56,6 +57,38 @@ public class RabbitMqConfig {
                 .durable(true)
                 .build();
     }
+
+//    /**
+//     * 生成订单中，根据购物车id查询商品信息，mq削峰
+//     */
+//    @Bean
+//    DirectExchange cartGetInfoDirect(){
+//        return (DirectExchange) ExchangeBuilder
+//                .directExchange(QueueEnum.QUEUE_CART_GETINFO.getExchange())
+//                .durable(true)
+//                .build();
+//    }
+
+//    /**
+//     * 订单生成，mq削峰交换机
+//     * @return
+//     */
+//    @Bean
+//    DirectExchange orderGenerateDirect(){
+//        return (DirectExchange) ExchangeBuilder
+//                .directExchange(QueueEnum.QUEUE_ORDER_GENERATE.getExchange())
+//                .durable(true)
+//                .build();
+//    }
+
+//    /**
+//     * 订单生成，mq削峰队列
+//     * @return
+//     */
+//    @Bean
+//    public Queue orderGenerateQueue(){
+//        return new Queue(QueueEnum.QUEUE_ORDER_GENERATE.getName());
+//    }
 
     /**
      * 订单实际消费队列
@@ -96,6 +129,17 @@ public class RabbitMqConfig {
                 .withArgument("x-dead-letter-routing-key", QueueEnum.QUEUE_PAY_CLOSE.getRouteKey())//到期后转发的路由键
                 .build();
     }
+
+//    /**
+//     * 生成订单中，根据购物车id查询商品信息，mq削峰队列
+//     */
+//    @Bean
+//    public Queue cartGetInfoQueue(){
+//        return QueueBuilder
+//                .durable(QueueEnum.QUEUE_CART_GETINFO.getName())
+//                .withArgument("x-message-ttl", 60000) //设置过期时间为60秒
+//                .build();
+//    }
 
     /**
      * 将订单队列绑定到交换机
@@ -140,4 +184,23 @@ public class RabbitMqConfig {
                 .to(payTtlDirect)
                 .with(QueueEnum.QUEUE_TTL_PAY_CLOSE.getRouteKey());
     }
+
+//    @Bean
+//    Binding orderGenerateBinding(DirectExchange orderGenerateDirect, Queue orderGenerateQueue){
+//        return BindingBuilder
+//                .bind(orderGenerateQueue)
+//                .to(orderGenerateDirect)
+//                .with(QueueEnum.QUEUE_ORDER_GENERATE.getRouteKey());
+//    }
+
+//    /**
+//     * 将获取购物车信息削峰队列绑定到交换机
+//     */
+//    @Bean
+//    Binding cartGetInfoBinding(DirectExchange cartGetInfoDirect,Queue cartGetInfoQueue){
+//        return BindingBuilder
+//                .bind(cartGetInfoQueue)
+//                .to(cartGetInfoDirect)
+//                .with(QueueEnum.QUEUE_CART_GETINFO.getRouteKey());
+//    }
 }

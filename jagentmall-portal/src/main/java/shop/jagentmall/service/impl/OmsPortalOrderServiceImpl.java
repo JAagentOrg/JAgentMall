@@ -3,12 +3,17 @@ package shop.jagentmall.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.github.pagehelper.PageHelper;
+import io.lettuce.core.RedisClient;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.component.CancelOrderSender;
+import shop.jagentmall.constant.RedisKeyPrefixEnum;
 import shop.jagentmall.domain.*;
 import shop.jagentmall.dao.*;
 import shop.jagentmall.exception.Asserts;
@@ -20,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -62,6 +68,10 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private OmsOrderItemMapper orderItemMapper;
     @Autowired
     private PortalOrderDao portalOrderDao;
+    @Autowired
+    private RedissonClient redissonClient;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
         ConfirmOrderResult result = new ConfirmOrderResult();
@@ -250,6 +260,244 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     }
 
     @Override
+    public Map<String, Object> generateOrderV1(OrderParamV1 orderParam) {
+        List<OmsOrderItem> orderItemList = new ArrayList<>();
+        if(orderParam.getMemberReceiveAddressId() == null){
+            Asserts.fail("请选择收货地址！");
+        }
+        // 判断购物车中商品是否都有库存,如果充足则锁定库存
+        if (!hasStockAndLockedByCache(orderParam)) {
+            Asserts.fail("库存不足，无法下单");
+        }
+        List<Long> cartIds = orderParam.getCartInfo().stream().map(item -> item.getCartId()).collect(Collectors.toList());
+        // 获取购物车及优惠信息
+        UmsMember currentMember = memberService.getCurrentMember();
+        List<CartPromotionItem> cartPromotionItemList = cartItemService.listPromotion(currentMember.getId(), cartIds);
+        for (CartPromotionItem cartPromotionItem : cartPromotionItemList) {
+            // 生成下单商品信息
+            OmsOrderItem orderItem = new OmsOrderItem();
+            orderItem.setProductId(cartPromotionItem.getProductId());
+            orderItem.setProductName(cartPromotionItem.getProductName());
+            orderItem.setProductPic(cartPromotionItem.getProductPic());
+            orderItem.setProductAttr(cartPromotionItem.getProductAttr());
+            orderItem.setProductBrand(cartPromotionItem.getProductBrand());
+            orderItem.setProductSn(cartPromotionItem.getProductSn());
+            orderItem.setProductPrice(cartPromotionItem.getPrice());
+            orderItem.setProductQuantity(cartPromotionItem.getQuantity());
+            orderItem.setProductSkuId(cartPromotionItem.getProductSkuId());
+            orderItem.setProductSkuCode(cartPromotionItem.getProductSkuCode());
+            orderItem.setProductCategoryId(cartPromotionItem.getProductCategoryId());
+            orderItem.setPromotionAmount(cartPromotionItem.getReduceAmount());
+            orderItem.setPromotionName(cartPromotionItem.getPromotionMessage());
+            orderItem.setGiftIntegration(cartPromotionItem.getIntegration());
+            orderItem.setGiftGrowth(cartPromotionItem.getGrowth());
+            orderItemList.add(orderItem);
+        }
+        // 判断使用使用了优惠券
+        if (orderParam.getCouponId() == null) {
+            // 不用优惠券
+            for (OmsOrderItem orderItem : orderItemList) {
+                orderItem.setCouponAmount(new BigDecimal(0));
+            }
+        } else {
+            // 使用优惠券
+            SmsCouponHistoryDetail couponHistoryDetail = getUseCoupon(cartPromotionItemList, orderParam.getCouponId());
+            if (couponHistoryDetail == null) {
+                Asserts.fail("该优惠券不可用");
+            }
+            // 对下单商品的优惠券进行处理,对优惠券金额分配到每一个商品头上
+            handleCouponAmount(orderItemList, couponHistoryDetail);
+        }
+        //判断是否使用积分
+        if (orderParam.getUseIntegration() == null||orderParam.getUseIntegration().equals(0)) {
+            // 不使用积分
+            for (OmsOrderItem orderItem : orderItemList) {
+                orderItem.setIntegrationAmount(new BigDecimal(0));
+            }
+        } else {
+            // 使用积分
+            BigDecimal totalAmount = calcTotalAmount(orderItemList);
+            BigDecimal integrationAmount = getUseIntegrationAmount(orderParam.getUseIntegration(), totalAmount, currentMember, orderParam.getCouponId() != null);
+            if (integrationAmount.compareTo(new BigDecimal(0)) == 0) {
+                Asserts.fail("积分不可用");
+            } else {
+                //可用情况下分摊到可用商品中
+                for (OmsOrderItem orderItem : orderItemList) {
+                    BigDecimal perAmount = orderItem.getProductPrice().divide(totalAmount, 3, RoundingMode.HALF_EVEN).multiply(integrationAmount);
+                    orderItem.setIntegrationAmount(perAmount);
+                }
+            }
+        }
+        // 计算order_item的实付金额
+        handleRealAmount(orderItemList);
+        // 进行库存锁定
+        lockStock(cartPromotionItemList);
+        //根据商品合计、运费、活动优惠、优惠券、积分计算应付金额
+        OmsOrder order = new OmsOrder();
+        order.setDiscountAmount(new BigDecimal(0));
+        order.setTotalAmount(calcTotalAmount(orderItemList));
+        order.setFreightAmount(new BigDecimal(0));
+        order.setPromotionAmount(calcPromotionAmount(orderItemList));
+        order.setPromotionInfo(getOrderPromotionInfo(orderItemList));
+        if (orderParam.getCouponId() == null) {
+            order.setCouponAmount(new BigDecimal(0));
+        }
+        else {
+            order.setCouponId(orderParam.getCouponId());
+            order.setCouponAmount(calcCouponAmount(orderItemList));
+        }
+        if (orderParam.getUseIntegration() == null) {
+            order.setIntegration(0);
+            order.setIntegrationAmount(new BigDecimal(0));
+        }
+        else {
+            order.setIntegration(orderParam.getUseIntegration());
+            order.setIntegrationAmount(calcIntegrationAmount(orderItemList));
+        }
+        order.setPayAmount(calcPayAmount(order));
+        // 转化为订单信息并插入数据库
+        order.setMemberId(currentMember.getId());
+        order.setCreateTime(new Date());
+        order.setMemberUsername(currentMember.getUsername());
+        // 支付方式：0->未支付；1->支付宝；2->微信
+        order.setPayType(orderParam.getPayType());
+        // 订单来源：0->PC订单；1->app订单
+        order.setSourceType(1);
+        // 订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
+        order.setStatus(0);
+        // 订单类型：0->正常订单；1->秒杀订单
+        order.setOrderType(0);
+        // 收货人信息：姓名、电话、邮编、地址
+        UmsMemberReceiveAddress address = memberReceiveAddressService.getItem(orderParam.getMemberReceiveAddressId());
+        order.setReceiverName(address.getName());
+        order.setReceiverPhone(address.getPhoneNumber());
+        order.setReceiverPostCode(address.getPostCode());
+        order.setReceiverProvince(address.getProvince());
+        order.setReceiverCity(address.getCity());
+        order.setReceiverRegion(address.getRegion());
+        order.setReceiverDetailAddress(address.getDetailAddress());
+        // 0->未确认；1->已确认
+        order.setConfirmStatus(0);
+        order.setDeleteStatus(0);
+        // 计算赠送积分
+        order.setIntegration(calcGifIntegration(orderItemList));
+        // 计算赠送成长值
+        order.setGrowth(calcGiftGrowth(orderItemList));
+        // 生成订单号
+        order.setOrderSn(generateOrderSn(order));
+        // 设置自动收货天数
+        List<OmsOrderSetting> orderSettings = orderSettingMapper.selectByExample(new OmsOrderSettingExample());
+        if(CollUtil.isNotEmpty(orderSettings)){
+            order.setAutoConfirmDay(orderSettings.get(0).getConfirmOvertime());
+        }
+        // 插入订单主表
+        orderMapper.insert(order);
+        for (OmsOrderItem orderItem : orderItemList) {
+            orderItem.setOrderId(order.getId());
+            orderItem.setOrderSn(order.getOrderSn());
+        }
+        // 插入订单子表
+        orderItemDao.insertList(orderItemList);
+        // 如使用优惠券更新优惠券使用状态
+        if (orderParam.getCouponId() != null) {
+            updateCouponStatus(orderParam.getCouponId(), currentMember.getId(), 1);
+        }
+        // 如使用积分需要扣除积分
+        if (orderParam.getUseIntegration() != null) {
+            order.setUseIntegration(orderParam.getUseIntegration());
+            if(currentMember.getIntegration() == null){
+                currentMember.setIntegration(0);
+            }
+            memberService.updateIntegration(currentMember.getId(), currentMember.getIntegration() - orderParam.getUseIntegration());
+        }
+        // 删除购物车中的下单商品
+        deleteCartItemList(cartPromotionItemList, currentMember);
+        // 发送延迟消息到消息队列
+        sendDelayMessageCancelOrder(order.getId());
+        Map<String, Object> result = new HashMap<>();
+        result.put("order", order);
+        result.put("orderItemList", orderItemList);
+        return result;
+    }
+
+    /**
+     * redis判断是否有充足的库存
+     * @param orderParam
+     * @return
+     */
+    private boolean hasStockAndLockedByCache(OrderParamV1 orderParam) {
+        boolean flag = true;
+        List<OrderParamV1.CartInfo> cartInfoList = orderParam.getCartInfo();
+        // 先竞争到本地锁，再竞争分布式锁
+        synchronized (OmsPortalOrderService.class){
+            // 竞争分布式锁
+            RLock rLock = redissonClient.getLock(RedisKeyPrefixEnum.LOCK_STOCK.getPrefixKey());
+            rLock.lock();
+            try{
+                Map<String,Integer> updateStockMap = new HashMap<>();
+                for(OrderParamV1.CartInfo cartInfo: cartInfoList){
+                    Long productId = cartInfo.getProductId();
+                    Long productSkuId = cartInfo.getProductSkuId();
+                    Integer quantity = cartInfo.getQuantity();
+                    String key = RedisKeyPrefixEnum.ORDER_CHECK_STOCK.getPrefixKey() + String.valueOf(productId) + String.valueOf(productSkuId);
+                    String stock = stringRedisTemplate.opsForValue().get(key);
+                    Integer nowStock;
+                    if(stock == null){
+                        // 如果redis中没有获取到,则从数据库中查找,并存入到redis中
+                        nowStock = addStockToRedis(productId,productSkuId);
+                    }
+                    else{
+                        nowStock = Integer.valueOf(stock);
+                    }
+                    if(nowStock == null || nowStock.compareTo(quantity) < 0){
+                        // 如果库存不满足,则返回
+                        flag = false;
+                        break;
+                    }
+                    else{
+                        Integer updateStock = nowStock - quantity;
+                        updateStockMap.put(key,updateStock);
+                    }
+                }
+                // 如果都满足库存，则去锁定这些库存数量
+                if(flag){
+                    for(Map.Entry<String,Integer> entry: updateStockMap.entrySet()){
+                        String key = entry.getKey();
+                        String val = String.valueOf(entry.getValue());
+                        stringRedisTemplate.opsForValue().set(key,val,10,TimeUnit.MINUTES);
+                    }
+                }
+            }finally {
+                rLock.unlock();
+            }
+        }
+        return flag;
+    }
+
+    /**
+     * 将sku对应的商品库存添加到redis中
+     * @param productId
+     * @param productSkuId
+     * @return
+     */
+    private Integer addStockToRedis(Long productId, Long productSkuId){
+        PmsSkuStockExample skuStockExample = new PmsSkuStockExample();
+        skuStockExample.createCriteria().andIdEqualTo(productSkuId);
+        List<PmsSkuStock> skuStockList = skuStockMapper.selectByExample(skuStockExample);
+        if(skuStockList.size() > 0){
+            PmsSkuStock skuStock = skuStockList.get(0);
+            String key = RedisKeyPrefixEnum.ORDER_CHECK_STOCK.getPrefixKey() + String.valueOf(productId) + String.valueOf(productSkuId);
+            String val = Integer.toString(skuStock.getStock() - skuStock.getLockStock());
+            // 缓存信息保存10分钟
+            stringRedisTemplate.opsForValue().set(key, val,10, TimeUnit.MINUTES);
+            return skuStock.getStock() - skuStock.getLockStock();
+        }
+        else{
+            return null;
+        }
+    }
+
+    @Override
     public void sendDelayMessageCancelOrder(Long orderId) {
         //获取订单超时时间
         OmsOrderSetting orderSetting = orderSettingMapper.selectByPrimaryKey(1L);
@@ -405,6 +653,39 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         OmsOrderDetail orderDetail = portalOrderDao.getDetail(orderId);
         int count = portalOrderDao.updateSkuStock(orderDetail.getOrderItemList());
         return count;
+    }
+
+    @Override
+    public void callBackStock(String orderSn) {
+        OmsOrderItemExample example = new OmsOrderItemExample();
+        example.createCriteria().andOrderSnEqualTo(orderSn);
+        List<OmsOrderItem> itemList = orderItemMapper.selectByExample(example);
+        synchronized (OmsPortalOrderService.class){
+            RLock rLock = redissonClient.getLock(RedisKeyPrefixEnum.LOCK_STOCK.getPrefixKey());
+            rLock.lock();
+            try {
+                for(OmsOrderItem item: itemList){
+                    Long productId = item.getProductId();
+                    Long productSkuId = item.getProductSkuId();
+                    Integer quantity = item.getProductQuantity();
+                    String key = RedisKeyPrefixEnum.ORDER_CHECK_STOCK.getPrefixKey() + String.valueOf(productId) + String.valueOf(productSkuId);
+                    String stock = stringRedisTemplate.opsForValue().get(key);
+                    Integer nowStock;
+                    if(stock == null){
+                        // 如果redis中没有获取到,则从数据库中查找,并存入到redis中
+                        addStockToRedis(productId,productSkuId);
+                    }
+                    else{
+                        nowStock = Integer.valueOf(stock);
+                        Integer updateStock = nowStock + quantity;
+                        String updateStockStr = String.valueOf(updateStock);
+                        stringRedisTemplate.opsForValue().set(key,updateStockStr,10,TimeUnit.MINUTES);
+                    }
+                }
+            }finally {
+                rLock.unlock();
+            }
+        }
     }
 
 
