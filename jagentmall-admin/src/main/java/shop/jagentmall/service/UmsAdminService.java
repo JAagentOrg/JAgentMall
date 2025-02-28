@@ -1,6 +1,7 @@
 package shop.jagentmall.service;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
+import shop.jagentmall.dto.UmsAdminParam;
 import shop.jagentmall.model.UmsAdmin;
 import shop.jagentmall.model.UmsResource;
 
@@ -24,4 +25,10 @@ public interface UmsAdminService {
      * 获取指定用户的可访问资源
      */
     List<UmsResource> getResourceList(Long adminId);
+
+
+    /**
+     * 注册功能
+     */
+    UmsAdmin register(UmsAdminParam umsAdminParam);
 }

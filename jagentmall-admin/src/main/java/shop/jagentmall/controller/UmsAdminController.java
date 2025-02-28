@@ -7,12 +7,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.dto.UmsAdminLoginParam;
+import shop.jagentmall.dto.UmsAdminParam;
+import shop.jagentmall.model.UmsAdmin;
 import shop.jagentmall.service.UmsAdminService;
 
 import java.util.HashMap;
@@ -41,4 +41,17 @@ public class UmsAdminController {
         tokenMap.put("tokenHead", tokenHead+" ");
         return CommonResult.success(tokenMap);
     }
+
+    @Operation(summary = "用户注册")
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult<UmsAdmin> register(@Validated @RequestBody UmsAdminParam umsAdminParam) {
+        UmsAdmin umsAdmin = adminService.register(umsAdminParam);
+        if (umsAdmin == null) {
+            return CommonResult.failed();
+        }
+        return CommonResult.success(umsAdmin);
+    }
+
+
 }
