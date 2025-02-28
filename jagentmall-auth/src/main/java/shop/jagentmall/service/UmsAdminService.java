@@ -13,7 +13,7 @@ import shop.jagentmall.domain.UmsAdminLoginParam;
  * @Date: 2025/02/09/16:52
  * @Description: 后台用户服务远程调用Service
  */
-@FeignClient("jagenmall-admin")
+@FeignClient("jagentmall-admin")
 public interface UmsAdminService {
 
     @PostMapping("/admin/login")
