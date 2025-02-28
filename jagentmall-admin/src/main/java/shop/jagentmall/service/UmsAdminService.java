@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import shop.jagentmall.dto.UmsAdminParam;
 import shop.jagentmall.model.UmsAdmin;
 import shop.jagentmall.model.UmsResource;
+import shop.jagentmall.model.UmsRole;
 
 import java.util.List;
 
@@ -31,4 +32,14 @@ public interface UmsAdminService {
      * 注册功能
      */
     UmsAdmin register(UmsAdminParam umsAdminParam);
+
+    /**
+     * 获取当前登录后台用户
+     */
+    UmsAdmin getCurrentAdmin();
+
+    /**
+     * 获取用户对于角色
+     */
+    List<UmsRole> getRoleList(Long adminId);
 }

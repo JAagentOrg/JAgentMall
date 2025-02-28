@@ -20,10 +20,8 @@ import shop.jagentmall.dto.UserDto;
 import shop.jagentmall.exception.Asserts;
 import shop.jagentmall.mapper.UmsAdminLoginLogMapper;
 import shop.jagentmall.mapper.UmsAdminMapper;
-import shop.jagentmall.model.UmsAdmin;
-import shop.jagentmall.model.UmsAdminExample;
-import shop.jagentmall.model.UmsAdminLoginLog;
-import shop.jagentmall.model.UmsResource;
+import shop.jagentmall.model.*;
+import shop.jagentmall.service.UmsAdminCacheService;
 import shop.jagentmall.service.UmsAdminService;
 
 import java.util.Date;
@@ -40,6 +38,8 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     private UmsAdminRoleRelationDao adminRoleRelationDao;
     @Autowired
     private UmsAdminLoginLogMapper loginLogMapper;
+    @Autowired
+    private UmsAdminCacheService adminCacheService;
 
     @Override
     public UmsAdmin getAdminByUsername(String username) {
@@ -125,5 +125,30 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         umsAdmin.setPassword(encodePassword);
         adminMapper.insert(umsAdmin);
         return umsAdmin;
+    }
+
+    /**
+     * 获取当前登录后台用户信息
+     * @return
+     */
+    @Override
+    public UmsAdmin getCurrentAdmin() {
+        UserDto userDto = (UserDto) StpUtil.getSession().get(AuthConstant.STP_ADMIN_INFO);
+        UmsAdmin admin = adminCacheService.getAdmin(userDto.getId());
+        if (admin == null) {
+            admin = adminMapper.selectByPrimaryKey(userDto.getId());
+            adminCacheService.setAdmin(admin);
+        }
+        return admin;
+    }
+
+    /**
+     * 获取用户对于角色
+     * @param adminId
+     * @return
+     */
+    @Override
+    public List<UmsRole> getRoleList(Long adminId) {
+        return adminRoleRelationDao.getRoleList(adminId);
     }
 }
