@@ -1,5 +1,6 @@
 package shop.jagentmall.service.impl;
 
+import org.springframework.stereotype.Service;
 import shop.jagentmall.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

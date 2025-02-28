@@ -5,6 +5,10 @@ target/
 .idea/
 *.iml
 
+# 忽略所有子目录中的 .yml 文件
+**/*.yml
+
+
 # Eclipse #
 .settings/
 .classpath
