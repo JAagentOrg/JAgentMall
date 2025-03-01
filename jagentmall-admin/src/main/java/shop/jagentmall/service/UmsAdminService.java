@@ -2,6 +2,7 @@ package shop.jagentmall.service;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import shop.jagentmall.dto.UmsAdminParam;
+import shop.jagentmall.dto.UpdateAdminPasswordParam;
 import shop.jagentmall.model.UmsAdmin;
 import shop.jagentmall.model.UmsResource;
 import shop.jagentmall.model.UmsRole;
@@ -57,4 +58,9 @@ public interface UmsAdminService {
      * 根据用户id获取用户
      */
     UmsAdmin getItem(Long id);
+
+    /**
+     * 修改密码
+     */
+    int updatePassword(UpdateAdminPasswordParam param);
 }

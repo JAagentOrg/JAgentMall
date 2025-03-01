@@ -3,9 +3,11 @@ package shop.jagentmall.service.impl;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.github.pagehelper.PageHelper;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +15,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.constant.AuthConstant;
 import shop.jagentmall.dao.UmsAdminRoleRelationDao;
 import shop.jagentmall.dto.UmsAdminParam;
+import shop.jagentmall.dto.UpdateAdminPasswordParam;
 import shop.jagentmall.dto.UserDto;
 import shop.jagentmall.exception.Asserts;
 import shop.jagentmall.mapper.UmsAdminLoginLogMapper;
@@ -195,4 +200,34 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     public UmsAdmin getItem(Long id) {
         return adminMapper.selectByPrimaryKey(id);
     }
+
+    /**
+     * 修改密码
+     * @param param
+     * @return
+     */
+    @Override
+    public int updatePassword(UpdateAdminPasswordParam param) {
+        if(StrUtil.isEmpty(param.getUsername())
+                ||StrUtil.isEmpty(param.getOldPassword())
+                ||StrUtil.isEmpty(param.getNewPassword())){
+            return -1;
+        }
+        UmsAdminExample example = new UmsAdminExample();
+        example.createCriteria().andUsernameEqualTo(param.getUsername());
+        List<UmsAdmin> adminList = adminMapper.selectByExample(example);
+        if(CollUtil.isEmpty(adminList)){
+            return -2;
+        }
+        UmsAdmin umsAdmin = adminList.get(0);
+        if(!BCrypt.checkpw(param.getOldPassword(),umsAdmin.getPassword())){
+            return -3;
+        }
+        umsAdmin.setPassword(BCrypt.hashpw(param.getNewPassword()));
+        adminMapper.updateByPrimaryKey(umsAdmin);
+        adminCacheService.delAdmin(umsAdmin.getId());
+        return 1;
+    }
+
+
 }
