@@ -47,4 +47,9 @@ public interface UmsAdminService {
      * 登出操作
      */
     void logout();
+
+    /**
+     * 根据用户名或昵称分页查询用户
+     */
+    List<UmsAdmin> list(String keyword, Integer pageSize, Integer pageNum);
 }

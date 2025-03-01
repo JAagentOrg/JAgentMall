@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.dto.UmsAdminLoginParam;
 import shop.jagentmall.dto.UmsAdminParam;
@@ -85,5 +86,14 @@ public class UmsAdminController {
         return CommonResult.success(null);
     }
 
+    @Operation(summary = "根据用户名或姓名分页获取用户列表")
+    @GetMapping(value = "/list")
+    @ResponseBody
+    public CommonResult<CommonPage<UmsAdmin>> list(@RequestParam(value = "keyword", required = false) String keyword,
+                                                   @RequestParam(value = "pageSize", defaultValue = "5") Integer pageSize,
+                                                   @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum) {
+        List<UmsAdmin> adminList = adminService.list(keyword, pageSize, pageNum);
+        return CommonResult.success(CommonPage.restPage(adminList));
+    }
 
 }
