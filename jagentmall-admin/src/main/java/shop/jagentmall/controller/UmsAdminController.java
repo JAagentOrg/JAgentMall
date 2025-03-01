@@ -146,7 +146,7 @@ public class UmsAdminController {
     }
 
     @Operation(summary = "给用户分配角色")
-    @RequestMapping(value = "/role/update", method = RequestMethod.POST)
+    @PostMapping(value = "/role/update")
     @ResponseBody
     public CommonResult updateRole(@RequestParam("adminId") Long adminId,
                                    @RequestParam("roleIds") List<Long> roleIds) {
@@ -155,5 +155,13 @@ public class UmsAdminController {
             return CommonResult.success(count);
         }
         return CommonResult.failed();
+    }
+
+    @Operation(summary = "获取指定用户的角色")
+    @GetMapping(value = "/role/{adminId}")
+    @ResponseBody
+    public CommonResult<List<UmsRole>> getRoleList(@PathVariable Long adminId) {
+        List<UmsRole> roleList = adminService.getRoleList(adminId);
+        return CommonResult.success(roleList);
     }
 }
