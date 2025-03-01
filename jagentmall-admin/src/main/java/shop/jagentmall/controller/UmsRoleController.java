@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.api.CommonResult;
+import shop.jagentmall.model.UmsMenu;
 import shop.jagentmall.model.UmsRole;
 import shop.jagentmall.service.UmsRoleService;
 
@@ -89,5 +90,13 @@ public class UmsRoleController {
             return CommonResult.success(count);
         }
         return CommonResult.failed();
+    }
+
+    @Operation(summary = "获取角色相关菜单")
+    @GetMapping(value = "/listMenu/{roleId}")
+    @ResponseBody
+    public CommonResult<List<UmsMenu>> listMenu(@PathVariable Long roleId) {
+        List<UmsMenu> roleList = roleService.listMenu(roleId);
+        return CommonResult.success(roleList);
     }
 }

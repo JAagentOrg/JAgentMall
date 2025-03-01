@@ -43,4 +43,9 @@ public interface UmsRoleService {
      */
     List<UmsRole> list(String keyword, Integer pageSize, Integer pageNum);
 
+    /**
+     * 获取角色相关菜单
+     */
+    List<UmsMenu> listMenu(Long roleId);
+
 }
