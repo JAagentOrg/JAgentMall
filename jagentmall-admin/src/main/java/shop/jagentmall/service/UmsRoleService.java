@@ -38,4 +38,9 @@ public interface UmsRoleService {
      */
     List<UmsRole> list();
 
+    /**
+     * 分页获取角色列表
+     */
+    List<UmsRole> list(String keyword, Integer pageSize, Integer pageNum);
+
 }

@@ -1,7 +1,9 @@
 package shop.jagentmall.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import shop.jagentmall.dao.UmsRoleDao;
 import shop.jagentmall.mapper.UmsRoleMapper;
 import shop.jagentmall.model.UmsMenu;
@@ -72,5 +74,15 @@ public class UmsRoleServiceImpl implements UmsRoleService {
     @Override
     public List<UmsRole> list() {
         return roleMapper.selectByExample(new UmsRoleExample());
+    }
+
+    @Override
+    public List<UmsRole> list(String keyword, Integer pageSize, Integer pageNum) {
+        PageHelper.startPage(pageNum, pageSize);
+        UmsRoleExample example = new UmsRoleExample();
+        if (!StringUtils.isEmpty(keyword)) {
+            example.createCriteria().andNameLike("%" + keyword + "%");
+        }
+        return roleMapper.selectByExample(example);
     }
 }
