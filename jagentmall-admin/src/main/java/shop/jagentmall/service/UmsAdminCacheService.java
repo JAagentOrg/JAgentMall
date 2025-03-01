@@ -21,4 +21,9 @@ public interface UmsAdminCacheService {
      */
     void setAdmin(UmsAdmin admin);
 
+    /**
+     * 删除后台用户缓存
+     */
+    void delAdmin(Long adminId);
+
 }
