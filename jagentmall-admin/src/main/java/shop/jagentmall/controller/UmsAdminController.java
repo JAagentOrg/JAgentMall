@@ -120,6 +120,17 @@ public class UmsAdminController {
         };
     }
 
+    @Operation(summary = "修改指定用户信息")
+    @PostMapping(value = "/update/{id}")
+    @ResponseBody
+    public CommonResult update(@PathVariable Long id, @RequestBody UmsAdmin admin) {
+        int count = adminService.update(id, admin);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
 
     @Operation(summary = "修改帐号状态")
     @PostMapping(value = "/updateStatus/{id}")
