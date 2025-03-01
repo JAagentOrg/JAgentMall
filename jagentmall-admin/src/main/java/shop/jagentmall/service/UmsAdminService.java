@@ -63,4 +63,9 @@ public interface UmsAdminService {
      * 修改密码
      */
     int updatePassword(UpdateAdminPasswordParam param);
+
+    /**
+     * 修改指定用户信息
+     */
+    int update(Long id, UmsAdmin admin);
 }

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -227,6 +228,33 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         adminMapper.updateByPrimaryKey(umsAdmin);
         adminCacheService.delAdmin(umsAdmin.getId());
         return 1;
+    }
+
+    /***
+     * 修改用户信息
+     * @param id
+     * @param admin
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int update(Long id, UmsAdmin admin) {
+        admin.setId(id);
+        UmsAdmin rawAdmin = adminMapper.selectByPrimaryKey(id);
+        if(rawAdmin.getPassword().equals(admin.getPassword())){
+            //与原加密密码相同的不需要修改
+            admin.setPassword(null);
+        }else{
+            //与原加密密码不同的需要加密修改
+            if(StrUtil.isEmpty(admin.getPassword())){
+                admin.setPassword(null);
+            }else{
+                admin.setPassword(BCrypt.hashpw(admin.getPassword()));
+            }
+        }
+        int count = adminMapper.updateByPrimaryKeySelective(admin);
+        adminCacheService.delAdmin(id);
+        return count;
     }
 
 

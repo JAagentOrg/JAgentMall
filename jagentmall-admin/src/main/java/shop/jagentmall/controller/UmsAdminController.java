@@ -110,17 +110,28 @@ public class UmsAdminController {
     @ResponseBody
     public CommonResult updatePassword(@RequestBody UpdateAdminPasswordParam updatePasswordParam) {
         int status = adminService.updatePassword(updatePasswordParam);
-        if (status > 0) {
-            return CommonResult.success(status);
-        } else if (status == -1) {
-            return CommonResult.failed("提交参数不合法");
-        } else if (status == -2) {
-            return CommonResult.failed("找不到该用户");
-        } else if (status == -3) {
-            return CommonResult.failed("旧密码错误");
-        } else {
-            return CommonResult.failed();
+        return switch (status) {
+            case -1 -> CommonResult.failed("提交参数不合法");
+            case -2 -> CommonResult.failed("找不到该用户");
+            case -3 -> CommonResult.failed("旧密码错误");
+            default -> status > 0
+                    ? CommonResult.success(status)
+                    : CommonResult.failed();
+        };
+    }
+
+
+    @Operation(summary = "修改帐号状态")
+    @PostMapping(value = "/updateStatus/{id}")
+    @ResponseBody
+    public CommonResult updateStatus(@PathVariable Long id,@RequestParam(value = "status") Integer status) {
+        UmsAdmin umsAdmin = new UmsAdmin();
+        umsAdmin.setStatus(status);
+        int count = adminService.update(id,umsAdmin);
+        if (count > 0) {
+            return CommonResult.success(count);
         }
+        return CommonResult.failed();
     }
 
 }
