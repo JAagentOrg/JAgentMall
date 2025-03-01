@@ -50,4 +50,9 @@ public class UmsRoleServiceImpl implements UmsRoleService {
         return roleMapper.insert(role);
     }
 
+    @Override
+    public int update(Long id, UmsRole role) {
+        role.setId(id);
+        return roleMapper.updateByPrimaryKeySelective(role);
+    }
 }

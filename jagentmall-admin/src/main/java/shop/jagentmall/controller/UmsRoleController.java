@@ -35,4 +35,15 @@ public class UmsRoleController {
         return CommonResult.failed();
     }
 
+    @Operation(summary = "修改角色")
+    @PostMapping(value = "/update/{id}")
+    @ResponseBody
+    public CommonResult update(@PathVariable Long id, @RequestBody UmsRole role) {
+        int count = roleService.update(id, role);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
 }
