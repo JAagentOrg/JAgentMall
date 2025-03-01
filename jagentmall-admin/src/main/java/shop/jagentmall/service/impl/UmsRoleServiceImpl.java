@@ -85,4 +85,9 @@ public class UmsRoleServiceImpl implements UmsRoleService {
         }
         return roleMapper.selectByExample(example);
     }
+
+    @Override
+    public List<UmsMenu> listMenu(Long roleId) {
+        return roleDao.getMenuListByRoleId(roleId);
+    }
 }
