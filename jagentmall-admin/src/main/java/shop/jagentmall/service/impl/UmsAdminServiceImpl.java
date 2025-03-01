@@ -257,5 +257,17 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         return count;
     }
 
+    /**
+     * 删除用户
+     * @param id
+     * @return
+     */
+    @Override
+    public int delete(Long id) {
+        int count = adminMapper.deleteByPrimaryKey(id);
+        adminCacheService.delAdmin(id);
+        return count;
+    }
+
 
 }

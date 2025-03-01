@@ -134,4 +134,15 @@ public class UmsAdminController {
         return CommonResult.failed();
     }
 
+    @Operation(summary = "删除指定用户信息")
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult delete(@PathVariable Long id) {
+        int count = adminService.delete(id);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
 }

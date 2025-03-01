@@ -68,4 +68,9 @@ public interface UmsAdminService {
      * 修改指定用户信息
      */
     int update(Long id, UmsAdmin admin);
+
+    /**
+     * 删除指定用户
+     */
+    int delete(Long id);
 }
