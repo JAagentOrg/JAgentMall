@@ -33,4 +33,9 @@ public interface UmsRoleService {
      */
     int delete(List<Long> ids);
 
+    /**
+     * 获取所有角色列表
+     */
+    List<UmsRole> list();
+
 }

@@ -59,4 +59,12 @@ public class UmsRoleController {
         return CommonResult.failed();
     }
 
+    @Operation(summary = "获取所有角色")
+    @GetMapping(value = "/listAll")
+    @ResponseBody
+    public CommonResult<List<UmsRole>> listAll() {
+        List<UmsRole> roleList = roleService.list();
+        return CommonResult.success(roleList);
+    }
+
 }

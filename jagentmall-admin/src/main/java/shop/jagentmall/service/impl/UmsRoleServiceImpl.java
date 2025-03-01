@@ -68,4 +68,9 @@ public class UmsRoleServiceImpl implements UmsRoleService {
         resourceService.initPathResourceMap();
         return count;
     }
+
+    @Override
+    public List<UmsRole> list() {
+        return roleMapper.selectByExample(new UmsRoleExample());
+    }
 }
