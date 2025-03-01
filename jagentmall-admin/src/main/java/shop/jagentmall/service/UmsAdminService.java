@@ -42,4 +42,9 @@ public interface UmsAdminService {
      * 获取用户对于角色
      */
     List<UmsRole> getRoleList(Long adminId);
+
+    /**
+     * 登出操作
+     */
+    void logout();
 }

@@ -151,4 +151,17 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     public List<UmsRole> getRoleList(Long adminId) {
         return adminRoleRelationDao.getRoleList(adminId);
     }
+
+    /**
+     * 注销登录
+     */
+    @Override
+    public void logout() {
+        //先清空缓存
+        UserDto userDto = (UserDto) StpUtil.getSession().get(AuthConstant.STP_ADMIN_INFO);
+        //清空 redis 缓存
+        adminCacheService.delAdmin(userDto.getId());
+        //再调用sa-token的登出方法
+        StpUtil.logout();
+    }
 }
