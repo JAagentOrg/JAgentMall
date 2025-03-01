@@ -1,6 +1,7 @@
 package shop.jagentmall.service;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
+import org.springframework.transaction.annotation.Transactional;
 import shop.jagentmall.dto.UmsAdminParam;
 import shop.jagentmall.dto.UpdateAdminPasswordParam;
 import shop.jagentmall.model.UmsAdmin;
@@ -73,4 +74,10 @@ public interface UmsAdminService {
      * 删除指定用户
      */
     int delete(Long id);
+
+    /**
+     * 修改用户角色关系
+     */
+    @Transactional
+    int updateRole(Long adminId, List<Long> roleIds);
 }

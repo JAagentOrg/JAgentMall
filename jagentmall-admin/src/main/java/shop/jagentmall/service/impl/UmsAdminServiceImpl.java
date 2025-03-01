@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -28,10 +29,12 @@ import shop.jagentmall.dto.UserDto;
 import shop.jagentmall.exception.Asserts;
 import shop.jagentmall.mapper.UmsAdminLoginLogMapper;
 import shop.jagentmall.mapper.UmsAdminMapper;
+import shop.jagentmall.mapper.UmsAdminRoleRelationMapper;
 import shop.jagentmall.model.*;
 import shop.jagentmall.service.UmsAdminCacheService;
 import shop.jagentmall.service.UmsAdminService;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,6 +51,8 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     private UmsAdminLoginLogMapper loginLogMapper;
     @Autowired
     private UmsAdminCacheService adminCacheService;
+    @Autowired
+    private UmsAdminRoleRelationMapper adminRoleRelationMapper;
 
     @Override
     public UmsAdmin getAdminByUsername(String username) {
@@ -266,6 +271,33 @@ public class UmsAdminServiceImpl implements UmsAdminService {
     public int delete(Long id) {
         int count = adminMapper.deleteByPrimaryKey(id);
         adminCacheService.delAdmin(id);
+        return count;
+    }
+
+    /**
+     * 修改用户角色关系
+     * @param adminId
+     * @param roleIds
+     * @return
+     */
+    @Override
+    public int updateRole(Long adminId, List<Long> roleIds) {
+        int count = roleIds == null ? 0 : roleIds.size();
+        //先删除原来的关系
+        UmsAdminRoleRelationExample adminRoleRelationExample = new UmsAdminRoleRelationExample();
+        adminRoleRelationExample.createCriteria().andAdminIdEqualTo(adminId);
+        adminRoleRelationMapper.deleteByExample(adminRoleRelationExample);
+        //建立新关系
+        if (!CollectionUtils.isEmpty(roleIds)) {
+            List<UmsAdminRoleRelation> list = new ArrayList<>();
+            for (Long roleId : roleIds) {
+                UmsAdminRoleRelation roleRelation = new UmsAdminRoleRelation();
+                roleRelation.setAdminId(adminId);
+                roleRelation.setRoleId(roleId);
+                list.add(roleRelation);
+            }
+            adminRoleRelationDao.insertList(list);
+        }
         return count;
     }
 
