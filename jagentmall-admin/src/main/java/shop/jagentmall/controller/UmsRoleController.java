@@ -9,6 +9,8 @@ import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.model.UmsRole;
 import shop.jagentmall.service.UmsRoleService;
 
+import java.util.List;
+
 /**
  * 天天进步
  *
@@ -40,6 +42,17 @@ public class UmsRoleController {
     @ResponseBody
     public CommonResult update(@PathVariable Long id, @RequestBody UmsRole role) {
         int count = roleService.update(id, role);
+        if (count > 0) {
+            return CommonResult.success(count);
+        }
+        return CommonResult.failed();
+    }
+
+    @Operation(summary = "批量删除角色")
+    @PostMapping(value = "/delete")
+    @ResponseBody
+    public CommonResult delete(@RequestParam("ids") List<Long> ids) {
+        int count = roleService.delete(ids);
         if (count > 0) {
             return CommonResult.success(count);
         }

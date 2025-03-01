@@ -6,6 +6,8 @@ import shop.jagentmall.dao.UmsRoleDao;
 import shop.jagentmall.mapper.UmsRoleMapper;
 import shop.jagentmall.model.UmsMenu;
 import shop.jagentmall.model.UmsRole;
+import shop.jagentmall.model.UmsRoleExample;
+import shop.jagentmall.service.UmsResourceService;
 import shop.jagentmall.service.UmsRoleService;
 
 import java.util.Date;
@@ -26,6 +28,8 @@ public class UmsRoleServiceImpl implements UmsRoleService {
 
     @Autowired
     private UmsRoleMapper roleMapper;
+    @Autowired
+    private UmsResourceService resourceService;
 
     /**
      * 根据管理员ID获取对应菜单
@@ -54,5 +58,14 @@ public class UmsRoleServiceImpl implements UmsRoleService {
     public int update(Long id, UmsRole role) {
         role.setId(id);
         return roleMapper.updateByPrimaryKeySelective(role);
+    }
+
+    @Override
+    public int delete(List<Long> ids) {
+        UmsRoleExample example = new UmsRoleExample();
+        example.createCriteria().andIdIn(ids);
+        int count = roleMapper.deleteByExample(example);
+        resourceService.initPathResourceMap();
+        return count;
     }
 }
