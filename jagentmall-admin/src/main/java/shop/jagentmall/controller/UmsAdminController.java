@@ -14,6 +14,7 @@ import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.dto.UmsAdminLoginParam;
 import shop.jagentmall.dto.UmsAdminParam;
+import shop.jagentmall.dto.UpdateAdminPasswordParam;
 import shop.jagentmall.model.UmsAdmin;
 import shop.jagentmall.model.UmsRole;
 import shop.jagentmall.service.UmsAdminService;
@@ -102,6 +103,24 @@ public class UmsAdminController {
     public CommonResult<UmsAdmin> getItem(@PathVariable Long id) {
         UmsAdmin admin = adminService.getItem(id);
         return CommonResult.success(admin);
+    }
+
+    @Operation(summary = "修改指定用户密码")
+    @PostMapping(value = "/updatePassword")
+    @ResponseBody
+    public CommonResult updatePassword(@RequestBody UpdateAdminPasswordParam updatePasswordParam) {
+        int status = adminService.updatePassword(updatePasswordParam);
+        if (status > 0) {
+            return CommonResult.success(status);
+        } else if (status == -1) {
+            return CommonResult.failed("提交参数不合法");
+        } else if (status == -2) {
+            return CommonResult.failed("找不到该用户");
+        } else if (status == -3) {
+            return CommonResult.failed("旧密码错误");
+        } else {
+            return CommonResult.failed();
+        }
     }
 
 }
