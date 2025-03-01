@@ -23,5 +23,9 @@ public interface UmsRoleService {
      * 添加角色
      */
     int create(UmsRole role);
+    /**
+     * 修改角色信息
+     */
+    int update(Long id, UmsRole role);
 
 }
