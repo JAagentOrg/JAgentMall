@@ -9,14 +9,20 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * SpringDoc相关配置
+ */
+@Configuration
 public class SpringDocConfig implements WebMvcConfigurer {
+
     private static final String SECURITY_SCHEME_NAME = "Authorization";
 
     @Bean
-    public OpenAPI AuthOpenAPI() {
+    public OpenAPI AdminOpenAPI() {
         return new OpenAPI()
                 .info(new Info().title("jagentmall认证中心")
                         .description("jagentmall认证中心相关接口文档")
@@ -42,7 +48,6 @@ public class SpringDocConfig implements WebMvcConfigurer {
         registry.addViewController("/swagger-ui/").setViewName("redirect:/swagger-ui/index.html");
     }
 
-
     @Bean
     public GlobalOpenApiCustomizer orderGlobalOpenApiCustomizer() {
         //解决Knife4j配置认证后无法自动添加认证头的问题
@@ -57,4 +62,5 @@ public class SpringDocConfig implements WebMvcConfigurer {
             }
         };
     }
+
 }
