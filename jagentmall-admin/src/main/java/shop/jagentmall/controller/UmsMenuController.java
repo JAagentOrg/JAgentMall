@@ -36,4 +36,17 @@ public class UmsMenuController {
         }
     }
 
+    @Operation(summary = "修改后台菜单")
+    @PostMapping(value = "/update/{id}")
+    @ResponseBody
+    public CommonResult update(@PathVariable Long id,
+                               @RequestBody UmsMenu umsMenu) {
+        int count = menuService.update(id, umsMenu);
+        if (count > 0) {
+            return CommonResult.success(count);
+        } else {
+            return CommonResult.failed();
+        }
+    }
+
 }

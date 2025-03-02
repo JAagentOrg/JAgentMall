@@ -16,4 +16,9 @@ public interface UmsMenuService {
      */
     int create(UmsMenu umsMenu);
 
+    /**
+     * 修改后台菜单
+     */
+    int update(Long id, UmsMenu umsMenu);
+
 }

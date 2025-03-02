@@ -27,6 +27,7 @@ public class UmsMenuServiceImpl implements UmsMenuService {
         return menuMapper.insert(umsMenu);
     }
 
+
     /**
      * 修改菜单层级
      */
@@ -44,4 +45,13 @@ public class UmsMenuServiceImpl implements UmsMenuService {
             }
         }
     }
+
+    @Override
+    public int update(Long id, UmsMenu umsMenu) {
+        umsMenu.setId(id);
+        updateLevel(umsMenu);
+        return menuMapper.updateByPrimaryKeySelective(umsMenu);
+    }
+
+
 }
