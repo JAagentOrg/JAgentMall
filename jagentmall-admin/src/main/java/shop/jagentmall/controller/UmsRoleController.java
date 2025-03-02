@@ -109,5 +109,19 @@ public class UmsRoleController {
         return CommonResult.success(roleList);
     }
 
+    @Operation(summary = "给角色分配菜单")
+    @PostMapping(value = "/allocMenu")
+    @ResponseBody
+    public CommonResult allocMenu(@RequestParam Long roleId, @RequestParam List<Long> menuIds) {
+        int count = roleService.allocMenu(roleId, menuIds);
+        return CommonResult.success(count);
+    }
 
+    @Operation(summary = "给角色分配资源")
+    @PostMapping(value = "/allocResource")
+    @ResponseBody
+    public CommonResult allocResource(@RequestParam Long roleId, @RequestParam List<Long> resourceIds) {
+        int count = roleService.allocResource(roleId, resourceIds);
+        return CommonResult.success(count);
+    }
 }
