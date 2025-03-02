@@ -15,7 +15,7 @@ public interface AlipayService {
     /**
      * 根据提交参数生成电脑支付页面
      */
-    String pay(AliPayParam aliPayParam);
+    String pay(Long orderId);
 
     /**
      * 支付宝异步回调处理
@@ -33,7 +33,7 @@ public interface AlipayService {
     /**
      * 根据提交参数生成手机支付页面
      */
-    String webPay(AliPayParam aliPayParam);
+    String webPay(Long orderId);
 
     /**
      * 支付关闭
@@ -46,4 +46,19 @@ public interface AlipayService {
      * @param refundParam
      */
     boolean refund(AliPayRefundParam refundParam);
+
+    /**
+     * 手机支付获取支付链接
+     * @param orderId
+     * @return
+     */
+    String getWebpaymentUrl(Long orderId);
+
+    /**
+     * 网站支付获取支付链接
+     * @param orderId
+     * @return
+     */
+    String getPaymentUrl(Long orderId);
+
 }

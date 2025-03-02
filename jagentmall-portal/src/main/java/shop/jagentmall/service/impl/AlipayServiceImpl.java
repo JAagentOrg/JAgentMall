@@ -15,9 +15,11 @@ import shop.jagentmall.config.AlipayConfig;
 import shop.jagentmall.domain.AliPayParam;
 import shop.jagentmall.domain.AliPayRefundParam;
 import shop.jagentmall.mapper.OmsOrderMapper;
+import shop.jagentmall.model.OmsOrder;
 import shop.jagentmall.service.AlipayService;
 import shop.jagentmall.service.OmsPortalOrderService;
 
+import java.util.Calendar;
 import java.util.Map;
 
 /**
@@ -40,7 +42,13 @@ public class AlipayServiceImpl implements AlipayService {
     @Autowired
     private ClosePaySender closePaySender;
     @Override
-    public String pay(AliPayParam aliPayParam) {
+    public String pay(Long orderId) {
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        AliPayParam aliPayParam = new AliPayParam();
+        aliPayParam.setTotalAmount(order.getPayAmount());
+        aliPayParam.setOutTradeNo(order.getOrderSn());
+        aliPayParam.setSubject(order.getMemberUsername() + "需要支付的订单号：" + order.getOrderSn());
+
         AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
         if(StrUtil.isNotEmpty(alipayConfig.getNotifyUrl())){
             //异步接收地址，公网可访问
@@ -62,13 +70,14 @@ public class AlipayServiceImpl implements AlipayService {
         bizContent.put("product_code", "FAST_INSTANT_TRADE_PAY");
         request.setBizContent(bizContent.toString());
         String formHtml = null;
-        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),5*60*1000);
+        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),2*60*1000);
         try {
 //            formHtml = alipayClient.pageExecute(request).getBody();
             AlipayTradePagePayResponse response = alipayClient.pageExecute(request);
             if(response.isSuccess()){
                 // 支付成功
                 formHtml = response.getBody();
+                log.info("订单创建成功！outTradeNo: {}", aliPayParam.getOutTradeNo());
             }
             else{
                 // 支付失败
@@ -105,8 +114,6 @@ public class AlipayServiceImpl implements AlipayService {
                 portalOrderService.paySuccessByOrderSn(outTradeNo,1);
             }else{
                 log.warn("订单未支付成功，trade_status:{}",tradeStatus);
-                String outTradeNo = params.get("out_trade_no");
-                portalOrderService.callBackStock(outTradeNo);
             }
         } else {
             log.warn("支付回调签名校验失败！");
@@ -149,7 +156,13 @@ public class AlipayServiceImpl implements AlipayService {
     }
 
     @Override
-    public String webPay(AliPayParam aliPayParam) {
+    public String webPay(Long orderId) {
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        AliPayParam aliPayParam = new AliPayParam();
+        aliPayParam.setTotalAmount(order.getPayAmount());
+        aliPayParam.setOutTradeNo(order.getOrderSn());
+        aliPayParam.setSubject(order.getMemberUsername() + "需要支付的订单号：" + order.getOrderSn());
+
         AlipayTradeWapPayRequest request = new AlipayTradeWapPayRequest ();
         if(StrUtil.isNotEmpty(alipayConfig.getNotifyUrl())){
             //异步接收地址，公网可访问
@@ -170,13 +183,14 @@ public class AlipayServiceImpl implements AlipayService {
         //手机网站支付默认传值FAST_INSTANT_TRADE_PAY
         bizContent.put("product_code", "QUICK_WAP_WAY");
         request.setBizContent(bizContent.toString());
-        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),5*60*1000);
+        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),2*60*1000);
         String formHtml = null;
         try {
             AlipayTradeWapPayResponse response = alipayClient.pageExecute(request);
             if(response.isSuccess()){
                 // 支付成功
                 formHtml = response.getBody();
+                log.info("订单支付创建成功！outTradeNo: {}", aliPayParam.getOutTradeNo());
             }
             else{
                 // 支付失败
@@ -204,12 +218,16 @@ public class AlipayServiceImpl implements AlipayService {
                 log.info("订单支付取消成功！outTradeNo:{}",outTradeNo);
             }
             else{
-                log.info("订单支付取消失败！outTradeNo:{}",outTradeNo);
+                log.info("订单支付取消失败！用户可能未输入账号创建交易！outTradeNo:{}",outTradeNo);
             }
         } catch (AlipayApiException e) {
             e.printStackTrace();
             log.error("Alipay API Exception: " + e.getMessage(), e);
         }
+//        finally {
+//            // 将订单状态变为未支付
+//            portalOrderService.updateOrderStatus(outTradeNo, 0);
+//        }
     }
 
     @Override
@@ -236,6 +254,84 @@ public class AlipayServiceImpl implements AlipayService {
         } catch (AlipayApiException e) {
             log.error("Alipay API Exception: " + e.getMessage(), e);
             return false;
+        }
+    }
+
+    @Override
+    public String getWebpaymentUrl(Long orderId) {
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        AliPayParam aliPayParam = new AliPayParam();
+        aliPayParam.setTotalAmount(order.getPayAmount());
+        aliPayParam.setOutTradeNo(order.getOrderSn());
+        aliPayParam.setSubject(order.getMemberUsername() + "需要支付的订单号：" + order.getOrderSn());
+
+        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
+        if (StrUtil.isNotEmpty(alipayConfig.getNotifyUrl())) {
+            request.setNotifyUrl(alipayConfig.getNotifyUrl());
+        }
+        if (StrUtil.isNotEmpty(alipayConfig.getReturnUrl())) {
+            request.setReturnUrl(alipayConfig.getReturnUrl());
+        }
+
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no", aliPayParam.getOutTradeNo());
+        bizContent.put("total_amount", aliPayParam.getTotalAmount());
+        bizContent.put("subject", aliPayParam.getSubject());
+        bizContent.put("product_code", "QUICK_WAP_WAY");
+        request.setBizContent(bizContent.toString());
+        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),5*60*1000);
+        try {
+            // 调用支付宝接口，返回 URL 而不是表单
+            AlipayTradePagePayResponse response = alipayClient.pageExecute(request,"GET");
+            if (response.isSuccess()) {
+                // 返回支付宝支付网关的完整 URL
+                return response.getBody();
+            } else {
+                log.error("支付宝支付失败: " + response.getSubMsg());
+                return null;
+            }
+        } catch (AlipayApiException e) {
+            log.error("支付宝 API 异常: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    @Override
+    public String getPaymentUrl(Long orderId) {
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        AliPayParam aliPayParam = new AliPayParam();
+        aliPayParam.setTotalAmount(order.getPayAmount());
+        aliPayParam.setOutTradeNo(order.getOrderSn());
+        aliPayParam.setSubject(order.getMemberUsername() + "需要支付的订单号：" + order.getOrderSn());
+
+        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
+        if (StrUtil.isNotEmpty(alipayConfig.getNotifyUrl())) {
+            request.setNotifyUrl(alipayConfig.getNotifyUrl());
+        }
+        if (StrUtil.isNotEmpty(alipayConfig.getReturnUrl())) {
+            request.setReturnUrl(alipayConfig.getReturnUrl());
+        }
+
+        JSONObject bizContent = new JSONObject();
+        bizContent.put("out_trade_no", aliPayParam.getOutTradeNo());
+        bizContent.put("total_amount", aliPayParam.getTotalAmount());
+        bizContent.put("subject", aliPayParam.getSubject());
+        bizContent.put("product_code", "FAST_INSTANT_TRADE_PAY");
+        request.setBizContent(bizContent.toString());
+        closePaySender.sendMessage(aliPayParam.getOutTradeNo(),5*60*1000);
+        try {
+            // 调用支付宝接口，返回 URL 而不是表单
+            AlipayTradePagePayResponse response = alipayClient.pageExecute(request,"GET");
+            if (response.isSuccess()) {
+                // 返回支付宝支付网关的完整 URL
+                return response.getBody();
+            } else {
+                log.error("支付宝支付失败: " + response.getSubMsg());
+                return null;
+            }
+        } catch (AlipayApiException e) {
+            log.error("支付宝 API 异常: " + e.getMessage(), e);
+            return null;
         }
     }
 }

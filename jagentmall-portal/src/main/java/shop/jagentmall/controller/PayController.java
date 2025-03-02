@@ -43,16 +43,17 @@ public class PayController {
             key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
                     + "+'_'+"
                     + "T(shop.jagentmall.context.SpringContextHolder).getBean('umsMemberServiceImpl').getCurrentMemberId()"
-                    + "#aliPayParam.getOutTradeNo()",
+                    + "+'_'+"
+                    + "T(String).valueOf(#orderId)",
             message = "正在执行支付流程，请稍后...",
             scene = IdempotentSceneEnum.RESTAPI,
             type = IdempotentTypeEnum.SPEL
     )
     @Operation(summary = "支付宝电脑网站支付")
     @RequestMapping(value = "/pay", method = RequestMethod.GET)
-    public void pay(AliPayParam aliPayParam, HttpServletResponse response) throws IOException {
+    public void pay(Long orderId, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=" + alipayConfig.getCharset());
-        response.getWriter().write(alipayService.pay(aliPayParam));
+        response.getWriter().write(alipayService.pay(orderId));
         response.getWriter().flush();
         response.getWriter().close();
     }
@@ -62,17 +63,18 @@ public class PayController {
             uniqueKeyPrefix = "JAgentMall-Pay:lock_generatePay:",
             key = "T(shop.jagentmall.context.SpringContextHolder).getBean('environment').getProperty('unique-name', '')"
                     + "+'_'+"
-                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('UmsMemberService').getCurrentMemberId()"
-                    + "#aliPayParam.getOutTradeNo()",
+                    + "T(shop.jagentmall.context.SpringContextHolder).getBean('umsMemberServiceImpl').getCurrentMemberId()"
+                    + "+'_'+"
+                    + "T(String).valueOf(#orderId)",
             message = "正在执行支付流程，请稍后...",
             scene = IdempotentSceneEnum.RESTAPI,
             type = IdempotentTypeEnum.SPEL
     )
     @Operation(summary = "支付宝手机网站支付")
     @RequestMapping(value = "/webPay", method = RequestMethod.GET)
-    public void webPay(AliPayParam aliPayParam, HttpServletResponse response) throws IOException {
+    public void webPay(Long orderId, HttpServletResponse response) throws IOException {
         response.setContentType("text/html;charset=" + alipayConfig.getCharset());
-        response.getWriter().write(alipayService.webPay(aliPayParam));
+        response.getWriter().write(alipayService.webPay(orderId));
         response.getWriter().flush();
         response.getWriter().close();
     }
@@ -91,7 +93,7 @@ public class PayController {
     @Operation(summary = "支付宝统一收单线下交易查询",description = "订单支付成功返回交易状态：TRADE_SUCCESS")
     @RequestMapping(value = "/query", method = RequestMethod.GET)
     @ResponseBody
-    public CommonResult<String> query(String outTradeNo, String tradeNo){
+    public CommonResult<String> query(@RequestParam(required = false) String outTradeNo, @RequestParam(required = false) String tradeNo){
         return CommonResult.success(alipayService.query(outTradeNo,tradeNo));
     }
 

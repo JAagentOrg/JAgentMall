@@ -127,6 +127,7 @@ public class OmsPortalOrderController {
     @RequestMapping(value = "/paySuccess", method = RequestMethod.POST)
     @ResponseBody
     public CommonResult paySuccess(@RequestParam Long orderId,@RequestParam Integer payType) {
+        // 因为无法公网访问notifyUrl，因此把库存扣减放在returnUrl中
         Integer count = portalOrderService.paySuccess(orderId,payType);
         return CommonResult.success(count, "支付成功");
     }

@@ -9,6 +9,9 @@ import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import shop.jagentmall.constant.QueueEnum;
+import shop.jagentmall.domain.ClosePayWrapper;
+
+import java.time.Instant;
 
 /**
  * @Title: ClosePaySender
@@ -23,10 +26,15 @@ public class ClosePaySender {
     private AmqpTemplate amqpTemplate;
 
     public void sendMessage(String outTradeNo,final long delayTimes){
+        long timestampNow = Instant.now().toEpochMilli();
+        String timestamp = String.valueOf(timestampNow);
+        ClosePayWrapper wrapper = new ClosePayWrapper();
+        wrapper.setTimeOut(timestamp);
+        wrapper.setOutTradeNo(outTradeNo);
         //给延迟队列发送消息
         amqpTemplate.convertAndSend(QueueEnum.QUEUE_TTL_PAY_CLOSE.getExchange(),
                 QueueEnum.QUEUE_TTL_PAY_CLOSE.getRouteKey(),
-                outTradeNo,
+                wrapper,
                 new MessagePostProcessor() {
                     @Override
                     public Message postProcessMessage(Message message) throws AmqpException {
