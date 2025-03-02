@@ -53,5 +53,10 @@ public class UmsMenuServiceImpl implements UmsMenuService {
         return menuMapper.updateByPrimaryKeySelective(umsMenu);
     }
 
+    @Override
+    public UmsMenu getItem(Long id) {
+        return menuMapper.selectByPrimaryKey(id);
+    }
+
 
 }

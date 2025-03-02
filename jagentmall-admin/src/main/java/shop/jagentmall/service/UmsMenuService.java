@@ -21,4 +21,9 @@ public interface UmsMenuService {
      */
     int update(Long id, UmsMenu umsMenu);
 
+    /**
+     * 根据ID获取菜单详情
+     */
+    UmsMenu getItem(Long id);
+
 }

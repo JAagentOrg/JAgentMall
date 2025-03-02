@@ -49,4 +49,12 @@ public class UmsMenuController {
         }
     }
 
+
+    @Operation(summary = "根据ID获取菜单详情")
+    @GetMapping(value = "/{id}")
+    @ResponseBody
+    public CommonResult<UmsMenu> getItem(@PathVariable Long id) {
+        UmsMenu umsMenu = menuService.getItem(id);
+        return CommonResult.success(umsMenu);
+    }
 }
