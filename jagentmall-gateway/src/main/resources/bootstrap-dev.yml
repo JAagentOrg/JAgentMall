@@ -6,3 +6,6 @@ spring:
       config:
         server-addr: http://127.0.0.1:8848
         file-extension: yaml
+logging:
+  level:
+    com.alibaba.csp.sentinel: DEBUG

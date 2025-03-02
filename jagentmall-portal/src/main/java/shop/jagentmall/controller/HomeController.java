@@ -3,6 +3,7 @@ package shop.jagentmall.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import shop.jagentmall.api.CommonResult;
@@ -26,6 +27,8 @@ import java.util.List;
 public class HomeController {
     @Autowired
     private HomeService homeService;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Operation(summary = "首页内容页信息展示")
     @RequestMapping(value = "/content", method = RequestMethod.GET)
