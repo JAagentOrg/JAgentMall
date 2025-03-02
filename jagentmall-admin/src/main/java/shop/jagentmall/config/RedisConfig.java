@@ -1,4 +1,8 @@
 package shop.jagentmall.config;
 
-public class RedisConfig extends BaseRedisConfig{
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RedisConfig extends BaseRedisConfig {
+
 }
