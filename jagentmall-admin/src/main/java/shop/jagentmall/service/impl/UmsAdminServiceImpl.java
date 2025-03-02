@@ -185,14 +185,4 @@ public class UmsAdminServiceImpl implements UmsAdminService {
         }
         return adminMapper.selectByExample(example);
     }
-
-    /**
-     * 根据用户id获取用户
-     * @param id
-     * @return
-     */
-    @Override
-    public UmsAdmin getItem(Long id) {
-        return adminMapper.selectByPrimaryKey(id);
-    }
 }

@@ -96,12 +96,4 @@ public class UmsAdminController {
         return CommonResult.success(CommonPage.restPage(adminList));
     }
 
-    @Operation(summary = "获取指定用户信息")
-    @GetMapping(value = "/{id}")
-    @ResponseBody
-    public CommonResult<UmsAdmin> getItem(@PathVariable Long id) {
-        UmsAdmin admin = adminService.getItem(id);
-        return CommonResult.success(admin);
-    }
-
 }
