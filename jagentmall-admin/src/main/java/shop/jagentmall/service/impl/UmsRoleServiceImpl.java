@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import shop.jagentmall.dao.UmsRoleDao;
 import shop.jagentmall.mapper.UmsRoleMapper;
 import shop.jagentmall.model.UmsMenu;
+import shop.jagentmall.model.UmsResource;
 import shop.jagentmall.model.UmsRole;
 import shop.jagentmall.model.UmsRoleExample;
 import shop.jagentmall.service.UmsResourceService;
@@ -90,4 +91,10 @@ public class UmsRoleServiceImpl implements UmsRoleService {
     public List<UmsMenu> listMenu(Long roleId) {
         return roleDao.getMenuListByRoleId(roleId);
     }
+
+    @Override
+    public List<UmsResource> listResource(Long roleId) {
+        return roleDao.getResourceListByRoleId(roleId);
+    }
+
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.model.UmsMenu;
+import shop.jagentmall.model.UmsResource;
 import shop.jagentmall.model.UmsRole;
 import shop.jagentmall.service.UmsRoleService;
 
@@ -99,4 +100,14 @@ public class UmsRoleController {
         List<UmsMenu> roleList = roleService.listMenu(roleId);
         return CommonResult.success(roleList);
     }
+
+    @Operation(summary = "获取角色相关资源")
+    @GetMapping(value = "/listResource/{roleId}")
+    @ResponseBody
+    public CommonResult<List<UmsResource>> listResource(@PathVariable Long roleId) {
+        List<UmsResource> roleList = roleService.listResource(roleId);
+        return CommonResult.success(roleList);
+    }
+
+
 }

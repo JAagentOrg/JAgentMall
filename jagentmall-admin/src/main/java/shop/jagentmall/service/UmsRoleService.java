@@ -1,6 +1,7 @@
 package shop.jagentmall.service;
 
 import shop.jagentmall.model.UmsMenu;
+import shop.jagentmall.model.UmsResource;
 import shop.jagentmall.model.UmsRole;
 
 import java.util.List;
@@ -47,5 +48,10 @@ public interface UmsRoleService {
      * 获取角色相关菜单
      */
     List<UmsMenu> listMenu(Long roleId);
+
+    /**
+     * 获取角色相关资源
+     */
+    List<UmsResource> listResource(Long roleId);
 
 }
