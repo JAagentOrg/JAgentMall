@@ -72,6 +72,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private RedissonClient redissonClient;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private AlipayService alipayService;
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
         ConfirmOrderResult result = new ConfirmOrderResult();
@@ -517,6 +519,7 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         }
         OmsOrder cancelOrder = cancelOrderList.get(0);
         if (cancelOrder != null) {
+            alipayService.colsePay(cancelOrder.getOrderSn());
             //修改订单状态为取消
             cancelOrder.setStatus(4);
             orderMapper.updateByPrimaryKeySelective(cancelOrder);
@@ -534,6 +537,8 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
                 UmsMember member = memberService.getById(cancelOrder.getMemberId());
                 memberService.updateIntegration(cancelOrder.getMemberId(), member.getIntegration() + cancelOrder.getUseIntegration());
             }
+            // 恢复redis中的库存
+            callBackStock(cancelOrder.getOrderSn());
         }
     }
 
@@ -686,6 +691,22 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
                 rLock.unlock();
             }
         }
+    }
+
+    @Override
+    public Boolean updateOrderStatus(String orderSn, Integer status) {
+        OmsOrderExample example = new OmsOrderExample();
+        example.createCriteria().andOrderSnEqualTo(orderSn);
+        OmsOrder order = new OmsOrder();
+        order.setStatus(status);
+        int cnt = orderMapper.updateByExampleSelective(order,example);
+        return cnt > 0;
+    }
+
+    @Override
+    public OmsOrder getOrder(Long orderId) {
+        OmsOrder order = orderMapper.selectByPrimaryKey(orderId);
+        return order;
     }
 
 
