@@ -6,6 +6,7 @@ import shop.jagentmall.domain.ConfirmOrderResult;
 import shop.jagentmall.domain.OmsOrderDetail;
 import shop.jagentmall.domain.OrderParam;
 import shop.jagentmall.domain.OrderParamV1;
+import shop.jagentmall.model.OmsOrder;
 
 import java.util.List;
 import java.util.Map;
@@ -101,4 +102,14 @@ public interface OmsPortalOrderService {
      * @param orderSn
      */
     void callBackStock(String orderSn);
+
+    /**
+     * 更新订单状态
+     */
+    Boolean updateOrderStatus(String orderSn, Integer status);
+
+    /**
+     * 获取主订单信息
+     */
+    OmsOrder getOrder(Long orderId);
 }
