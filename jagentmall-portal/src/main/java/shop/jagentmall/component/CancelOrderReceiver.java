@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import shop.jagentmall.idempotent.annotation.Idempotent;
 import shop.jagentmall.idempotent.enums.IdempotentSceneEnum;
 import shop.jagentmall.idempotent.enums.IdempotentTypeEnum;
+import shop.jagentmall.model.OmsOrder;
+import shop.jagentmall.service.AlipayService;
 import shop.jagentmall.service.OmsPortalOrderService;
 
 /**
@@ -24,6 +26,8 @@ public class CancelOrderReceiver {
 
     @Autowired
     private OmsPortalOrderService portalOrderService;
+    @Autowired
+    AlipayService alipayService;
     @Idempotent(
             uniqueKeyPrefix = "JAgentMall-PortalOrder:delay_cancel_order:",
             key = "T(String).valueOf(#orderId)",
@@ -34,6 +38,8 @@ public class CancelOrderReceiver {
     @RabbitHandler
     public void handle(Long orderId){
         portalOrderService.cancelOrder(orderId);
+        OmsOrder cancelOrder = portalOrderService.getOrder(orderId);
+        alipayService.colsePay(cancelOrder.getOrderSn());
         LOGGER.info("process orderId:{}",orderId);
     }
 }
