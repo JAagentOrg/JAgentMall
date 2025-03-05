@@ -72,8 +72,6 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
     private RedissonClient redissonClient;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    @Autowired
-    private AlipayService alipayService;
     @Override
     public ConfirmOrderResult generateConfirmOrder(List<Long> cartIds) {
         ConfirmOrderResult result = new ConfirmOrderResult();
@@ -519,7 +517,6 @@ public class OmsPortalOrderServiceImpl implements OmsPortalOrderService {
         }
         OmsOrder cancelOrder = cancelOrderList.get(0);
         if (cancelOrder != null) {
-            alipayService.colsePay(cancelOrder.getOrderSn());
             //修改订单状态为取消
             cancelOrder.setStatus(4);
             orderMapper.updateByPrimaryKeySelective(cancelOrder);

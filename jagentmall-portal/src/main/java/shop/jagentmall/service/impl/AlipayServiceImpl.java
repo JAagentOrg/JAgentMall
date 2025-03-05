@@ -73,7 +73,7 @@ public class AlipayServiceImpl implements AlipayService {
         closePaySender.sendMessage(aliPayParam.getOutTradeNo(),2*60*1000);
         try {
 //            formHtml = alipayClient.pageExecute(request).getBody();
-            AlipayTradePagePayResponse response = alipayClient.pageExecute(request);
+            AlipayTradePagePayResponse response = alipayClient.pageExecute(request,"GET");
             if(response.isSuccess()){
                 // 支付成功
                 formHtml = response.getBody();
@@ -224,10 +224,6 @@ public class AlipayServiceImpl implements AlipayService {
             e.printStackTrace();
             log.error("Alipay API Exception: " + e.getMessage(), e);
         }
-//        finally {
-//            // 将订单状态变为未支付
-//            portalOrderService.updateOrderStatus(outTradeNo, 0);
-//        }
     }
 
     @Override
