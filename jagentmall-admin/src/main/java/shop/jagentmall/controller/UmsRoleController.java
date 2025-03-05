@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import shop.jagentmall.api.CommonPage;
 import shop.jagentmall.api.CommonResult;
 import shop.jagentmall.model.UmsMenu;
+import shop.jagentmall.model.UmsResource;
 import shop.jagentmall.model.UmsRole;
 import shop.jagentmall.service.UmsRoleService;
 
@@ -98,5 +99,29 @@ public class UmsRoleController {
     public CommonResult<List<UmsMenu>> listMenu(@PathVariable Long roleId) {
         List<UmsMenu> roleList = roleService.listMenu(roleId);
         return CommonResult.success(roleList);
+    }
+
+    @Operation(summary = "获取角色相关资源")
+    @GetMapping(value = "/listResource/{roleId}")
+    @ResponseBody
+    public CommonResult<List<UmsResource>> listResource(@PathVariable Long roleId) {
+        List<UmsResource> roleList = roleService.listResource(roleId);
+        return CommonResult.success(roleList);
+    }
+
+    @Operation(summary = "给角色分配菜单")
+    @PostMapping(value = "/allocMenu")
+    @ResponseBody
+    public CommonResult allocMenu(@RequestParam Long roleId, @RequestParam List<Long> menuIds) {
+        int count = roleService.allocMenu(roleId, menuIds);
+        return CommonResult.success(count);
+    }
+
+    @Operation(summary = "给角色分配资源")
+    @PostMapping(value = "/allocResource")
+    @ResponseBody
+    public CommonResult allocResource(@RequestParam Long roleId, @RequestParam List<Long> resourceIds) {
+        int count = roleService.allocResource(roleId, resourceIds);
+        return CommonResult.success(count);
     }
 }
