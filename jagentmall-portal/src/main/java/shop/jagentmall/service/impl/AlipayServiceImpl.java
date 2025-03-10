@@ -9,6 +9,7 @@ import com.alipay.api.request.*;
 import com.alipay.api.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import shop.jagentmall.component.ClosePaySender;
 import shop.jagentmall.config.AlipayConfig;
@@ -21,6 +22,7 @@ import shop.jagentmall.service.OmsPortalOrderService;
 
 import java.util.Calendar;
 import java.util.Map;
+
 
 /**
  * @Title: AlipayServiceImpl
@@ -38,7 +40,7 @@ public class AlipayServiceImpl implements AlipayService {
     @Autowired
     private OmsOrderMapper orderMapper;
     @Autowired
-    private OmsPortalOrderService portalOrderService;
+    private ApplicationContext applicationContext;
     @Autowired
     private ClosePaySender closePaySender;
     @Override
@@ -96,6 +98,8 @@ public class AlipayServiceImpl implements AlipayService {
 
     @Override
     public String notify(Map<String, String> params) {
+
+
         String result = "failure";
         boolean signVerified = false;
         try {
@@ -111,7 +115,8 @@ public class AlipayServiceImpl implements AlipayService {
                 result = "success";
                 log.info("notify方法被调用了，tradeStatus:{}",tradeStatus);
                 String outTradeNo = params.get("out_trade_no");
-                portalOrderService.paySuccessByOrderSn(outTradeNo,1);
+                OmsPortalOrderService service = applicationContext.getBean(OmsPortalOrderService.class);
+                service.paySuccessByOrderSn(outTradeNo,1);
             }else{
                 log.warn("订单未支付成功，trade_status:{}",tradeStatus);
             }
