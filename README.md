@@ -9,7 +9,7 @@
 ## 🌟 项目概览
 采用Spring Cloud 2023 + Spring Boot 3.2技术栈，集成注册中心、配置中心、监控中心、智能网关等基础设施，实现了商品检索、智能下单、分布式事务等电商核心场景。创新性整合Spring Alibaba AI实现自然语言交互式购物体验。
 
-❗ **线上演示**：[演示视频](https://www.bilibili.com/video/BV1SH9ZYpEzR) | 📦 **源码地址**：[GitHub仓库](https://github.com/JAagentOrg/JAgentMall)
+❗ **线上演示**：[演示视频](https://www.bilibili.com/video/BV1SH9ZYpEzR) | 📦 **源码地址**：[GitHub仓库](https://github.com/JAagentOrg/JAgentMall/tree/dev)
 
 ## 🚀 核心特性
 ### 高性能架构设计
